@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kencana Store — Home (Diperbaiki)</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --kencana-blue: #0b2b48;
+      --accent: #f2b134;
+      --muted: #6b7280;
+    }
+    body {
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      line-height: 1.5;
+    }
+
+    /* Card Style: Lebih lembut */
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(11,43,72,0.08);
+      border: 1px solid rgba(0,0,0,0.04);
+    }
+
+    /* Product Image Style */
+    .product-img {
+      height: 190px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(11,43,72,0.04), rgba(11,43,72,0.01));
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      padding: 1.5rem;
+    }
+    @media (max-width: 768px) {
+      .product-img { height: 150px; }
+    }
+
+    /* Price & Call-to-Action */
+    .price {
+      color: var(--kencana-blue);
+      font-weight: 800;
+      font-size: 1.25rem;
+    }
+    .addCartBtn {
+      transition: all 0.2s;
+      border-color: rgba(11,43,72,0.1);
+    }
+    .addCartBtn:hover {
+      background: var(--kencana-blue);
+      color: white;
+      border-color: var(--kencana-blue);
+    }
+
+    /* Navbar link hover effect */
+    .nav-link {
+      color: #111827;
+      position: relative;
+      transition: color 0.2s;
+    }
+    .nav-link:hover {
+      color: var(--kencana-blue);
+    }
+    .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 1px;
+    }
+
+    /* Hero Slider Style: Lebih Clean */
+    .hero-slider {
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
+    }
+    .hero-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transform: scale(1.05);
+      transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      display: flex;
+      align-items: center;
+    }
+    .hero-slide img {
+      object-fit: cover;
+      width: 100%;
+      height: 100%;
+    }
+    .hero-slide.active {
+      opacity: 1;
+      transform: scale(1);
+      position: relative;
+    }
+    .hero-overlay {
+      background: linear-gradient(90deg, rgba(11,43,72,0.85) 0%, rgba(11,43,72,0.45) 50%, rgba(255,255,255,0) 100%);
+    }
+    .hero-slide[data-index="1"] .hero-overlay {
+      background: linear-gradient(-90deg, rgba(11,43,72,0.85) 0%, rgba(11,43,72,0.45) 50%, rgba(255,255,255,0) 100%);
+    }
+    .hero-content {
+      position: relative;
+      z-index: 20;
+      color: #ffffff;
+      text-shadow: 0 4px 12px rgba(2,6,23,0.4);
+    }
+    .badge {
+      background: var(--accent);
+      color: var(--kencana-blue);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    /* Slider Controls: Lebih tegas */
+    .slider-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.5);
+      border: 1px solid rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .slider-dot.active {
+      background: var(--accent);
+      width: 18px;
+      transform: scale(1.1);
+    }
+    .slider-arrow {
+      background: rgba(11,43,72,0.7);
+      color: white;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      transition: background 0.3s;
+    }
+    .slider-arrow:hover {
+      background: var(--kencana-blue);
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <header class="bg-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-6">
+        <a href="#" class="flex items-center gap-2">
+          <div class="w-10 h-10 rounded-full bg-[color:var(--accent)] flex items-center justify-center font-bold text-xl text-[color:var(--kencana-blue)] shadow-md">K</div>
+          <span class="text-2xl font-extrabold text-[color:var(--kencana-blue)]">Kencana Store</span>
+        </a>
+        <nav class="hidden lg:flex items-center gap-1 text-sm font-medium">
+          <a class="nav-link px-3 py-2 active" href="#">Home</a>
+          <div class="relative group">
+            <button class="flex items-center gap-2 px-3 py-2 nav-link">
+              Profil Perusahaan
+              <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div class="absolute left-0 mt-2 hidden group-hover:block dropdown card min-w-40 py-2 transition-all duration-300">
+              <a href="#visi" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Visi</a>
+              <a href="#misi" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Misi</a>
+              <a href="#sejarah" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sejarah</a>
+            </div>
+          </div>
+          <div class="relative group">
+            <button class="flex items-center gap-2 px-3 py-2 nav-link">
+              Galeri
+              <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div class="absolute left-0 mt-2 hidden group-hover:block dropdown card min-w-40 py-2">
+              <a href="#sertifikasi" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sertifikasi</a>
+              <a href="#galeri-proyek" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Galeri Proyek / Produk</a>
+            </div>
+          </div>
+          <div class="relative group">
+            <button class="flex items-center gap-2 px-3 py-2 nav-link">
+              Kontak
+              <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div class="absolute left-0 mt-2 hidden group-hover:block dropdown card min-w-40 py-2">
+              <a href="#info-cabang" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Informasi Cabang</a>
+              <a href="#kontak-perusahaan" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Kontak Perusahaan</a>
+            </div>
+          </div>
+          <a class="nav-link px-3 py-2 border border-[color:var(--accent)] text-[color:var(--kencana-blue)] bg-[color:var(--accent)] rounded-full hover:bg-white hover:text-[color:var(--kencana-blue)] hover:shadow-md transition-all duration-200 ml-4" href="#member">Member Area</a>
+        </nav>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="relative hidden lg:block w-full max-w-sm">
+          <input id="search" type="text" placeholder="Cari Produk..." class="w-full border rounded-full px-4 py-2 text-sm pl-10 focus:ring-1 focus:ring-[color:var(--accent)] focus:border-[color:var(--accent)] transition" />
+          <svg class="w-4 h-4 absolute left-3 top-2.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35" />
+            <circle cx="11" cy="11" r="6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+          </svg>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="cartBtn" class="relative flex items-center gap-1 px-4 py-2 border-2 border-[color:var(--accent)] rounded-full bg-[color:var(--accent)] text-[color:var(--kencana-blue)] font-semibold hover:bg-white transition duration-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4" />
+              <circle cx="9" cy="20" r="1" />
+              <circle cx="20" cy="20" r="1" />
+            </svg>
+            <span class="text-sm hidden sm:inline">Keranjang</span>
+            <span id="cartCountTop" class="ml-1 text-xs bg-[color:var(--kencana-blue)] text-white px-2 py-0.5 rounded-full absolute -top-1 -right-1">0</span>
+          </button>
+          <!-- <button id="accountBtn" class="flex items-center gap-1 px-3 py-2 border rounded-full bg-white text-[color:var(--kencana-blue)] hover:bg-gray-100 transition duration-200">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A7 7 0 0112 15a7 7 0 016.879 2.804M15 11a3 3 0 10-6 0 3 3 0 006 0z" />
+            </svg>
+            <span class="text-sm hidden sm:inline">Login</span>
+          </button> -->
+          <!-- button untuk login -->
+          <a href="login-otp.html" class="flex items-center gap-1 px-3 py-2 border rounded-full bg-white text-[color:var(--kencana-blue)] hover:bg-gray-100 transition duration-200">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A7 7 0 0112 15a7 7 0 016.879 2.804M15 11a3 3 0 10-6 0 3 3 0 006 0z" />
+            </svg>
+            <span class="text-sm hidden sm:inline">Login</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="max-w-7xl mx-auto px-4 lg:px-6 py-6 lg:py-8">
+    <div class="hero-slider h-72 lg:h-[450px] w-full">
+      <div class="hero-slide active" data-index="0">
+        <img src="https://picsum.photos/1200/500?random=1" alt="Material Bangunan" class="absolute inset-0 object-cover w-full h-full" />
+        <div class="hero-overlay absolute inset-0"></div>
+        <div class="absolute inset-0 flex items-center">
+          <div class="hero-content max-w-2xl p-6 lg:p-10 text-white">
+            <div class="badge mb-3">Promo Eksklusif</div>
+            <h2 class="text-3xl lg:text-5xl font-extrabold leading-tight">Material Bangunan Berkualitas</h2>
+            <p class="mt-3 text-sm lg:text-lg opacity-90">Diskon hingga 15% untuk produk terpilih. Cek stok cabang dan pesan tanpa registrasi.</p>
+            <div class="mt-6 flex gap-3">
+              <a href="#produk" class="px-6 py-3 bg-[color:var(--accent)] text-[color:var(--kencana-blue)] rounded-full font-bold shadow-lg hover:shadow-xl transition-all">Lihat Produk</a>
+              <a href="#map" class="px-6 py-3 border-2 border-white rounded-full text-white font-medium hover:bg-white hover:text-[color:var(--kencana-blue)] transition-all">Cabang Terdekat</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-slide" data-index="1">
+        <img src="https://picsum.photos/1200/500?random=2" alt="Pabrik Kencana" class="absolute inset-0 object-cover w-full h-full" />
+        <div class="hero-overlay absolute inset-0"></div>
+        <div class="absolute inset-0 flex items-center justify-end">
+          <div class="hero-content max-w-2xl p-6 lg:p-10 text-white text-right">
+            <div class="badge mb-3">Loyalty Program</div>
+            <h2 class="text-3xl lg:text-5xl font-extrabold leading-tight">Program Poin & Redeem</h2>
+            <p class="mt-3 text-sm lg:text-lg opacity-90">Daftar jadi member untuk dapatkan poin setiap transaksi — atau belanja sebagai guest, tetap mudah.</p>
+            <div class="mt-6 flex gap-3 justify-end">
+              <a href="#member" class="px-6 py-3 bg-[color:var(--accent)] text-[color:var(--kencana-blue)] rounded-full font-bold shadow-lg hover:shadow-xl transition-all">Jelajah Member</a>
+              <a href="#produk" class="px-6 py-3 border-2 border-white rounded-full text-white font-medium hover:bg-white hover:text-[color:var(--kencana-blue)] transition-all">Belanja Sekarang</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-slide" data-index="2">
+        <img src="https://picsum.photos/1200/500?random=3" alt="Pabrik Kencana" class="absolute inset-0 object-cover w-full h-full" />
+        <div class="hero-overlay absolute inset-0"></div>
+        <div class="absolute inset-0 flex items-center">
+          <div class="hero-content max-w-2xl p-6 lg:p-10 text-white">
+            <div class="badge mb-3">Solusi Proyek</div>
+            <h2 class="text-3xl lg:text-5xl font-extrabold leading-tight">Konsultasi & Supply Proyek</h2>
+            <p class="mt-3 text-sm lg:text-lg opacity-90">Kami bantu proyek Anda dari awal hingga selesai — hubungi tim sales kami untuk solusi terbaik.</p>
+            <div class="mt-6 flex gap-3">
+              <a href="#kontak-perusahaan" class="px-6 py-3 bg-[color:var(--accent)] text-[color:var(--kencana-blue)] rounded-full font-bold shadow-lg hover:shadow-xl transition-all">Hubungi Sales</a>
+              <a href="#galeri-proyek" class="px-6 py-3 border-2 border-white rounded-full text-white font-medium hover:bg-white hover:text-[color:var(--kencana-blue)] transition-all">Lihat Proyek</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+    <div class="max-w-7xl mx-auto px-4 lg:px-6 flex justify-center gap-3 mb-8">
+        <div class="slider-dot active" data-index="0"></div>
+        <div class="slider-dot" data-index="1"></div>
+        <div class="slider-dot" data-index="2"></div>
+    </div>
+    <section id="produk" class="max-w-7xl mx-auto px-4 lg:px-6 py-6 lg:py-8">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-semibold text-[color:var(--kencana-blue)]">
+          Produk Terbaru
+        </h2>
+        <a
+          href="#produk-all"
+          class="text-sm text-[color:var(--kencana-blue)] hover:underline"
+          >Lihat Semua</a
+        >
+      </div>
+
+      <div
+        id="productsGrid"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+      >
+        <!-- product cards from JS -->
+      </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-4 lg:px-6 py-6 lg:py-8">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-semibold text-[color:var(--kencana-blue)]">
+          Galeri Proyek
+        </h2>
+        <a
+          href="#galeri-proyek"
+          class="text-sm text-[color:var(--kencana-blue)] hover:underline"
+          >Lihat Semua</a
+        >
+      </div>
+
+      <div
+        id="projectsGrid"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+      >
+        <!-- project cards from JS -->
+      </div>
+    </section>
+    <section class="max-w-7xl mx-auto px-4 lg:px-6 py-6 lg:py-8">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-semibold text-[color:var(--kencana-blue)]">
+          Testimoni Pelanggan
+        </h2>
+        <a
+          href="#testimoni"
+          class="text-sm text-[color:var(--kencana-blue)] hover:underline"
+          >Lihat Semua</a
+        >
+      </div>
+
+      <div
+        id="testimonialsGrid"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        <!-- testimonial cards from JS -->
+      </div>
+    </section>
+    <section class="max-w-7xl mx-auto px-4 lg:px-6 py-6 lg:py-8">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-semibold text-[color:var(--kencana-blue)]">
+          Cabang Kami
+        </h2>
+        <a
+          href="#info-cabang"
+          class="text-sm text-[color:var(--kencana-blue)] hover:underline"
+          >Lihat Semua</a
+        >
+      </div>
+
+      <div
+        id="branchesGrid"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+      >
+        <!-- branch cards from JS -->
+      </div>
+    </section>
+    <footer class="bg-white mt-12 border-t">
+      <div class="max-w-7xl mx-auto px-4 lg:px-6 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div>
+          <h3 class="text-lg font-semibold text-[color:var(--kencana-blue)] mb-4">Kencana Store</h3>
+          <p class="text-sm text-gray-600 mb-4">Alamat: Jl. Merdeka No.123, Jakarta, Indonesia</p>
+          <p class="text-sm text-gray-600 mb-4">Email:
+            <a href="mailto:info@kencanaindonesia.co.id" class="text-[color:var(--kencana-blue)] hover:underline">info@kencanaindonesia.co.id</a>
+            </p>
+          <p class="text-sm text-gray-600">Tel: (021) 1234 5678</p>
+
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-[color:var(--kencana-blue)] mb-4">Link Cepat</h3>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li><a href="#visi" class="hover:underline">Visi</a></li>
+            <li><a href="#misi" class="hover:underline">Misi</a></li>
+            <li><a href="#sejarah" class="hover:underline">Sejarah</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-[color:var(--kencana-blue)] mb-4">Kontak</h3>
+          <p class="text-sm text-gray-600 mb-4">Email: info@kencanaindonesia.co.id<br />Tel: (021) 1234 5678</p>
+        </div>
+      </div>
+      <div class="text-center text-xs text-gray-600 pb-6">
+        © <span id="yearFooter"></span> Kencana Indonesia. All rights reserved.
+      </div>
+    </footer>
+    <script>
+        // Hero Slider Logic
+        const slides = document.querySelectorAll('.hero-slide');
+        const dots = document.querySelectorAll('.slider-dot');
+        let currentIndex = 0;
+        const totalSlides = slides.length;
+    
+        function showSlide(index) {
+        slides.forEach((slide, i) => {
+            slide.classList.toggle('active', i === index);
+        });
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+        });
+        currentIndex = index;
+        }
+    
+        function nextSlide() {
+        let nextIndex = (currentIndex + 1) % totalSlides;
+        showSlide(nextIndex);
+        }
+    
+        dots.forEach(dot => {
+        dot.addEventListener('click', () => {
+            let index = parseInt(dot.getAttribute('data-index'));
+            showSlide(index);
+        });
+        });
+    
+        setInterval(nextSlide, 5000); // Change slide every 5 seconds
+    
+        // Product Data
+        const products = [
+        { id: 1, name: "Semen Portland", price: 50000, image: "https://picsum.photos/200?random=1" },
+        { id: 2, name: "Bata Merah", price: 3000, image: "https://picsum.photos/200?random=2" },
+        { id: 3, name: "Pasir Beton", price: 150000, image: "https://picsum.photos/200?random=3" },
+        { id: 4, name: "Besi Beton", price: 120000, image: "https://picsum.photos/200?random=4" },
+        { id: 5, name: "Cat Tembok", price: 75000, image: "https://picsum.photos/200?random=5" },
+        { id: 6, name: "Keramik Lantai", price: 95000, image: "https://picsum.photos/200?random=6" },
+        { id: 7, name: "Pipa PVC", price: 40000, image: "https://picsum.photos/200?random=7" },
+        { id: 8, name: "Kaca Tempered", price: 200000, image: "https://picsum.photos/200?random=8" },
+        ];
+    </script>
+    <script>
+        // Render Products
+        const productsGrid = document.getElementById('productsGrid');
+        products.forEach(product => {
+        const productCard = document.createElement('div');
+        productCard.className = 'card overflow-hidden';
+        productCard.innerHTML = `
+            <div class="product-img">
+            <img src="${product.image}" alt="${product.name}" class="max-h-full object-contain" />
+            </div>
+            <div class="p-4">
+            <h3 class="text-lg font-semibold text-[color:var(--kencana-blue)] mb-2">${product.name}</h3>
+            <p class="price">Rp ${product.price.toLocaleString('id-ID')}</p>
+            <button class="addCartBtn mt-4 w-full px-4 py-2 border rounded-full text-sm font-medium hover:bg-[color:var(--kencana-blue)] hover:text-white transition duration-200" data-id="${product.id}">Tambah ke Keranjang</button>
+            </div>
+        `;
+        productsGrid.appendChild(productCard);
+        });
+    
+        // Cart Logic
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const cartCountTop = document.getElementById('cartCountTop');
+    
+        function updateCartCount() {
+        cartCountTop.textContent = cart.length;
+        }
+    
+        function addToCart(productId) {
+        const product = products.find(p => p.id === productId);
+        if (product) {
+            cart.push(product);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            alert(`${product.name} telah ditambahkan ke keranjang.`);
+        }
+        }
+    
+        document.querySelectorAll('.addCartBtn').forEach(button => {
+        button.addEventListener('click', () => {
+            const productId = parseInt(button.getAttribute('data-id'));
+            addToCart(productId);
+        });
+        });
+    
+        updateCartCount();
+    </script>
+    <script>
+        // Project Data
+        const projects = [
+        { id: 1, name: "Proyek Perumahan A", image: "https://picsum.photos/300?random=11" },
+        { id: 2, name: "Proyek Komersial B", image: "https://picsum.photos/300?random=12" },
+        { id: 3, name: "Proyek Infrastruktur C", image: "https://picsum.photos/300?random=13" },
+        { id: 4, name: "Proyek Renovasi D", image: "https://picsum.photos/300?random=14" },
+        ];
+    
+        // Render Projects
+        const projectsGrid = document.getElementById('projectsGrid');
+        projects.forEach(project => {
+        const projectCard = document.createElement('div');
+        projectCard.className = 'card overflow-hidden';
+        projectCard.innerHTML = `
+            <div class="product-img">
+            <img src="${project.image}" alt="${project.name}" class="max-h-full object-contain" />
+            </div>
+            <div class="p-4">
+            <h3 class="text-lg font-semibold text-[color:var(--kencana-blue)] mb-2">${project.name}</h3>
+            <button class="addCartBtn mt-4 w-full px-4 py-2 border rounded-full text-sm font-medium hover:bg-[color:var(--kencana-blue)] hover:text-white transition duration-200">Lihat Detail</button>
+            </div>
+        `;
+        projectsGrid.appendChild(projectCard);
+        });
+    </script>
+    <script>
+        // Testimonial Data
+        const testimonials = [
+        { id: 1, name: "Andi", feedback: "Pelayanan cepat dan produk berkualitas!", image: "https://i.pravatar.cc/100?img=1" },
+        { id: 2, name: "Budi", feedback: "Harga bersaing dan banyak pilihan.", image: "https://i.pravatar.cc/100?img=2" },
+        { id: 3, name: "Citra", feedback: "Mudah berbelanja tanpa registrasi.", image: "https://i.pravatar.cc/100?img=3" },
+        ];
+    
+        // Render Testimonials
+        const testimonialsGrid = document.getElementById('testimonialsGrid');
+        testimonials.forEach(testimonial => {
+        const testimonialCard = document.createElement('div');
+        testimonialCard.className = 'card p-6';
+        testimonialCard.innerHTML = `
+            <div class="flex items-center gap-4 mb-4">
+            <img src="${testimonial.image}" alt="${testimonial.name}" class="w-12 h-12 rounded-full object-cover" />
+            <h4 class="text-lg font-semibold text-[color:var(--kencana-blue)]">${testimonial.name}</h4>
+            </div>
+            <p class="text-sm opacity-90">${testimonial.feedback}</p>
+        `;
+        testimonialsGrid.appendChild(testimonialCard);
+        });
+    </script>
+    <script>
+        // Branch Data
+        const branches = [
+        { id: 1, name: "Cabang Jakarta", address: "Jl. Merdeka No.123, Jakarta", image: "https://picsum.photos/300?random=21" },
+        { id: 2, name: "Cabang Surabaya", address: "Jl. Pahlawan No.45, Surabaya", image: "https://picsum.photos/300?random=22" },
+        { id: 3, name: "Cabang Bandung", address: "Jl. Asia Afrika No.67, Bandung", image: "https://picsum.photos/300?random=23" },
+        { id: 4, name: "Cabang Medan", address: "Jl. Sisingamangaraja No.89, Medan", image: "https://picsum.photos/300?random=24" },
+        ];
+    
+        // Render Branches
+        const branchesGrid = document.getElementById('branchesGrid');
+        branches.forEach(branch => {
+        const branchCard = document.createElement('div');
+        branchCard.className = 'card overflow-hidden';
+        branchCard.innerHTML = `
+            <div class="product-img">
+            <img src="${branch.image}" alt="${branch.name}" class="max-h-full object-contain" />
+            </div>
+            <div class="p-4">
+            <h3 class="text-lg font-semibold text-[color:var(--kencana-blue)] mb-2">${branch.name}</h3>
+            <p class="text-sm opacity-90">${branch.address}</p>
+            <button class="addCartBtn mt-4 w-full px-4 py-2 border rounded-full text-sm font-medium hover:bg-[color:var(--kencana-blue)] hover:text-white transition duration-200">Lihat Lokasi</button>
+            </div>
+        `;
+        branchesGrid.appendChild(branchCard);
+        });
+    </script>
+    <script>
+        // Footer Year
+        document.getElementById('yearFooter').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html> 

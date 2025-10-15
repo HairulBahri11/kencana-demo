@@ -1,0 +1,691 @@
+<!-- <!DOCTYPE html>
+<html lang="id">
+
+<head>
+     
+    <meta charset="utf-8" />
+     
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+      <title>Kencana Store — Home (Dengan Slider) & Member Area</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+      <style>
+        :root {
+            --kencana-blue: #0b2b48;
+            --accent: #f2b134;
+            --muted: #6b7280;
+        }
+
+        body {
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+                Roboto, "Helvetica Neue", Arial;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(11, 43, 72, 0.06);
+        }
+
+        .product-img {
+            height: 170px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg,
+                    rgba(11, 43, 72, 0.03),
+                    rgba(11, 43, 72, 0.01));
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .price {
+            color: #c53030;
+            font-weight: 700;
+        }
+
+        .nav-link {
+            color: #111827;
+        }
+
+        /* Slider styles */
+        .hero-slider {
+            /* Tetap sama: Container utama, harus relatif agar slide absolut di dalamnya terikat */
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        .hero-slide {
+            /* HARUS ABSOLUT agar saling menumpuk */
+            position: absolute;
+            /* Memastikan slide menutupi seluruh area slider */
+            inset: 0;
+            /* Agar slide tidak aktif tidak terlihat */
+            opacity: 0;
+            /* Efek zoom-in ringan */
+            transform: scale(1.02);
+            /* Transisi untuk semua properti yang berubah */
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            /* Tambahkan Z-index rendah agar yang aktif bisa berada di atas */
+            z-index: 5;
+            /* Flexbox untuk memposisikan konten di dalam slide */
+            display: flex;
+            align-items: center;
+            /* Gambar di dalamnya perlu fill/cover */
+        }
+
+        .hero-slide.active {
+            /* Slide aktif harus terlihat */
+            opacity: 1;
+            /* Kembalikan ke skala normal */
+            transform: scale(1);
+            /* HARUS tetap ABSOLUT (HILANGKAN position: relative; dari slide aktif) */
+            /* Tingkatkan z-index agar berada di atas slide lainnya */
+            z-index: 10;
+        }
+
+        /* Gambar di dalam Slide */
+        .hero-slide img {
+            position: absolute;
+            /* Agar gambar mengisi penuh slide */
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Penting agar gambar tidak terdistorsi */
+            z-index: 1;
+            /* Di bawah overlay */
+        }
+
+        /* Overlay */
+        .hero-overlay {
+            /* Overlay harus ABSOLUT dan menutupi slide */
+            position: absolute;
+            inset: 0;
+            /* Gradient yang Anda definisikan */
+            background: linear-gradient(90deg,
+                    rgba(11, 43, 72, 0.72) 0%,
+                    rgba(11, 43, 72, 0.32) 40%,
+                    rgba(255, 255, 255, 0) 100%);
+            z-index: 2;
+            /* Di atas gambar */
+        }
+
+        /* Konten Hero */
+        .hero-content {
+            /* Konten harus relatif terhadap flex container (hero-slide) */
+            position: relative;
+            z-index: 3;
+            /* Di atas overlay */
+        }
+
+
+        /* Dots */
+        .slider-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            transition: background 0.3s ease;
+            /* Tambahkan transisi */
+        }
+
+        .slider-dot.active {
+            background: var(--accent);
+            /* Atau warna solid putih jika var(--accent) tidak didefinisikan */
+            /* Contoh warna solid yang lebih jelas: */
+            /* background: white; opacity: 1; */
+        }
+
+        /* Arrow Controls */
+        .slider-arrow {
+            background: rgba(11, 43, 72, 0.6);
+            color: white;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            /* Tambahkan transisi */
+        }
+
+        .slider-arrow:hover {
+            background: rgba(11, 43, 72, 0.8);
+            /* Efek hover */
+        }
+
+        @media (max-width: 768px) {
+            .hero-content {
+                padding: 24px;
+            }
+
+            .hero-content {
+                position: relative;
+                z-index: 20;
+                /* lebih tinggi dari .hero-overlay */
+                color: #ffffff;
+                text-shadow: 0 8px 20px rgba(2, 6, 23, 0.55);
+                /* membuat huruf 'pop' */
+            }
+
+            .product-img {
+                height: 130px;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <a href="#" class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-full bg-[color:var(--accent)] flex items-center justify-center font-bold text-[color:var(--kencana-blue)]">
+                        K
+                    </div>
+                    <span class="text-xl font-semibold text-[color:var(--kencana-blue)]">Kencana Store</span>
+                </a>
+
+                <nav class="hidden lg:flex items-center gap-4 text-sm">
+                    <a class="nav-link px-3 py-2 hover:text-[color:var(--kencana-blue)]" href="#">Home</a>
+
+                    <div class="relative group">
+                        <button class="flex items-center gap-2 px-3 py-2 nav-link">
+                            Profil Perusahaan
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div
+                            class="absolute left-0 mt-2 hidden group-hover:block dropdown bg-white border rounded shadow-sm py-2">
+                            <a href="#visi" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Visi</a>
+                            <a href="#misi" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Misi</a>
+                            <a href="#sejarah"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Sejarah</a>
+                        </div>
+                    </div>
+
+                    <div class="relative group">
+                        <button class="flex items-center gap-2 px-3 py-2 nav-link">
+                            Galeri
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div
+                            class="absolute left-0 mt-2 hidden group-hover:block dropdown bg-white border rounded shadow-sm py-2">
+                            <a href="#sertifikasi"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Sertifikasi</a>
+                            <a href="#galeri-proyek"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Galeri Proyek /
+                                Produk</a>
+                        </div>
+                    </div>
+
+                    <div class="relative group">
+                        <button class="flex items-center gap-2 px-3 py-2 nav-link">
+                            Kontak
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div
+                            class="absolute left-0 mt-2 hidden group-hover:block dropdown bg-white border rounded shadow-sm py-2">
+                            <a href="#info-cabang"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Informasi Cabang</a>
+                            <a href="#kontak-perusahaan"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Kontak
+                                Perusahaan</a>
+                        </div>
+                    </div>
+
+                    <a class="nav-link px-3 py-2 hover:text-[color:var(--kencana-blue)] font-bold text-[color:var(--kencana-blue)]"
+                        href="member-area.html">Member Area</a>
+                </nav>
+            </div>
+        </div>
+         
+    </header>
+
+    <main class="py-12 bg-gray-50" id="member">
+        <div class="max-w-7xl mx-auto px-6">
+            <h1 class="text-3xl font-extrabold text-[color:var(--kencana-blue)] mb-8">
+                Area Member
+            </h1>
+
+            <div class="flex flex-col lg:flex-row gap-8">
+                <aside class="lg:w-1/4">
+                    <nav class="card p-4">
+                        <ul class="space-y-1">
+                            <li>
+                                <a href="#"
+                                    class="block px-3 py-2 text-sm font-medium rounded-lg text-white bg-[color:var(--kencana-blue)]">
+                                    <svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                    </svg>
+                                    Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#profile"
+                                    class="block px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100">
+                                    <svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    Profil Saya
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#orders"
+                                    class="block px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100">
+                                    <svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                    </svg>
+                                    Riwayat Pesanan
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#settings"
+                                    class="block px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100">
+                                    <svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    Pengaturan
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#logout"
+                                    class="block px-3 py-2 text-sm font-medium rounded-lg text-red-600 hover:bg-red-50 mt-4 border-t pt-4 border-gray-100">
+                                    <svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                    </svg>
+                                    Keluar
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </aside>
+
+                <div class="lg:w-3/4 space-y-8">
+                    <div class="card p-6">
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="w-16 h-16 flex-shrink-0 bg-gray-200 rounded-full flex items-center justify-center text-xl font-bold text-gray-600 border-4 border-[color:var(--accent)]">
+                                AS
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-semibold text-gray-800">
+                                    Selamat Datang Kembali, **Ahmad Santoso**!
+                                </h2>
+                                <p class="text-gray-500 mt-1 text-sm">
+                                    Ini adalah ringkasan akun Anda. Kelola pesanan dan profil Anda di sini.
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="card p-5 border-t-4 border-[color:var(--accent)]">
+                            <p class="text-sm font-medium text-gray-500">Poin Loyalitas Anda</p>
+                            <p class="text-3xl font-bold text-[color:var(--kencana-blue)] mt-1">1,250</p>
+                            <p class="text-xs text-gray-400 mt-1">Setara Rp. 125.000</p>
+                        </div>
+
+                        <div class="card p-5 border-t-4 border-yellow-500">
+                            <p class="text-sm font-medium text-gray-500">Pesanan Tertunda</p>
+                            <p class="text-3xl font-bold text-yellow-600 mt-1">2</p>
+                            <p class="text-xs text-gray-400 mt-1">Lihat di Riwayat Pesanan</p>
+                        </div>
+
+                        <div class="card p-5 border-t-4 border-green-500">
+                            <p class="text-sm font-medium text-gray-500">Status Member</p>
+                            <p class="text-3xl font-bold text-green-600 mt-1">Platinum</p>
+                            <p class="text-xs text-gray-400 mt-1">Nikmati diskon eksklusif!</p>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <h3 class="text-xl font-semibold text-[color:var(--kencana-blue)] mb-4">Aktivitas Terbaru</h3>
+
+                        <ul class="divide-y divide-gray-100">
+                            <li class="py-3 flex justify-between items-center">
+                                <div>
+                                    <p class="text-base text-gray-800 font-medium">Pesanan #KNC7812</p>
+                                    <p class="text-sm text-gray-500">Tanggal: 14 Oktober 2025</p>
+                                </div>
+                                <span
+                                    class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Selesai</span>
+                            </li>
+                            <li class="py-3 flex justify-between items-center">
+                                <div>
+                                    <p class="text-base text-gray-800 font-medium">Pesanan #KNC7901</p>
+                                    <p class="text-sm text-gray-500">Tanggal: 15 Oktober 2025</p>
+                                </div>
+                                <span
+                                    class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Menunggu
+                                    Pembayaran</span>
+                            </li>
+                            <li class="py-3 flex justify-between items-center">
+                                <div>
+                                    <p class="text-base text-gray-800 font-medium">Pembaruan Profil</p>
+                                    <p class="text-sm text-gray-500">Tanggal: 15 Oktober 2025</p>
+                                </div>
+                                <span
+                                    class="px-3 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">Akun</span>
+                            </li>
+                        </ul>
+
+                        <a href="#orders"
+                            class="mt-4 inline-flex items-center text-sm font-medium text-[color:var(--kencana-blue)] hover:text-[color:var(--accent)]">
+                            Lihat Semua Riwayat
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5l7 7-7 7" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html> -->
+
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Kencana Store — Member Area (Simulasi Data)</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --kencana-blue: #0b2b48;
+            --accent: #f2b134;
+            --muted: #6b7280;
+        }
+
+        body {
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+                Roboto, "Helvetica Neue", Arial;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(11, 43, 72, 0.06);
+        }
+
+        .product-img {
+            height: 170px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg,
+                    rgba(11, 43, 72, 0.03),
+                    rgba(11, 43, 72, 0.01));
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .price {
+            color: #c53030;
+            font-weight: 700;
+        }
+
+        .nav-link {
+            color: #111827;
+        }
+
+        /* Styling tambahan untuk membiarkan elemen member area terlihat tanpa slider */
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <a href="#" class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-full bg-[color:var(--accent)] flex items-center justify-center font-bold text-[color:var(--kencana-blue)]">
+                        K
+                    </div>
+                    <span class="text-xl font-semibold text-[color:var(--kencana-blue)]">Kencana Store</span>
+                </a>
+
+                <nav class="hidden lg:flex items-center gap-4 text-sm">
+                    <a class="nav-link px-3 py-2 hover:text-[color:var(--kencana-blue)]" href="index.html">Home</a>
+
+                    <a class="nav-link px-3 py-2 hover:text-[color:var(--kencana-blue)] font-bold text-[color:var(--kencana-blue)]"
+                        href="#member">Member Area</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="py-12 bg-gray-50" id="member">
+        <div class="max-w-7xl mx-auto px-6">
+            <h1 class="text-3xl font-extrabold text-[color:var(--kencana-blue)] mb-8">
+                Area Member
+            </h1>
+
+            <div class="flex flex-col lg:flex-row gap-8">
+                <aside class="lg:w-1/4">
+                    <nav class="card p-4">
+                        <ul class="space-y-1">
+                            <li>
+                                <a href="#"
+                                    class="block px-3 py-2 text-sm font-medium rounded-lg text-white bg-[color:var(--kencana-blue)]">
+                                    <svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                    </svg>
+                                    Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#profile"
+                                    class="block px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100">
+                                    <svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    Profil Saya
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#poin"
+                                    class="block px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100">
+                                    <svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                                    </svg>
+                                    Poin & Tukar Hadiah (Redeem)
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#orders"
+                                    class="block px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100">
+                                    <svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                    </svg>
+                                    Riwayat Transaksi
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#settings"
+                                    class="block px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100">
+                                    <svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    Pengaturan Akun
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#logout"
+                                    class="block px-3 py-2 text-sm font-medium rounded-lg text-red-600 hover:bg-red-50 mt-4 border-t pt-4 border-gray-100">
+                                    <svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                    </svg>
+                                    Keluar
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </aside>
+
+                <div class="lg:w-3/4 space-y-8">
+                    <div class="card p-6">
+                        <div class="flex items-start gap-4">
+                            <div id="user-initial"
+                                class="w-16 h-16 flex-shrink-0 bg-gray-200 rounded-full flex items-center justify-center text-xl font-bold text-gray-600 border-4 border-[color:var(--accent)]">
+                                AS
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-semibold text-gray-800">
+                                    Selamat Datang Kembali, <strong id="user-name">Pengguna Kencana</strong>!
+                                </h2>
+                                <p class="text-gray-500 mt-1 text-sm">
+                                    Kelola profil, pantau transaksi, dan tukar poin loyalitas Anda.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="card p-5 border-t-4 border-green-500">
+                            <p class="text-sm font-medium text-gray-500">Status Member</p>
+                            <p id="member-status" class="text-3xl font-bold text-green-600 mt-1">Platinum</p>
+                            <p class="text-xs text-gray-400 mt-1">Nikmati diskon eksklusif!</p>
+                        </div>
+                        <div class="card p-5 border-t-4 border-[color:var(--accent)] col-span-2">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Total Poin Loyalitas Anda</p>
+                                    <p id="total-points"
+                                        class="text-4xl font-extrabold text-[color:var(--accent)] mt-1">1,250</p>
+                                    <p id="point-value" class="text-sm text-gray-500 mt-1">Setara Rp. 125.000</p>
+                                </div>
+                                <button
+                                    class="px-5 py-2 bg-red-600 text-white font-semibold rounded-lg shadow hover:bg-red-700 transition"
+                                    onclick="alert('Anda diarahkan ke halaman penukaran hadiah! Poin Anda: ' + document.getElementById('total-points').textContent.replace(',', ''))">
+                                    Tukar Poin Sekarang!
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card p-6" id="transaksi">
+                        <h3 class="text-xl font-semibold text-[color:var(--kencana-blue)] mb-4">Riwayat Transaksi Terakhir</h3>
+
+                        <ul id="transaction-list" class="divide-y divide-gray-100">
+                            </ul>
+
+                        <a href="#orders"
+                            class="mt-4 inline-flex items-center text-sm font-medium text-[color:var(--kencana-blue)] hover:text-[color:var(--accent)]">
+                            Lihat Semua Riwayat Transaksi
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5l7 7-7 7" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Data Simulasi Pengguna
+        const userData = {
+            name: "Ahmad Santoso",
+            points: 1250,
+            status: "Platinum",
+            transactions: [
+                { id: 'KNC7812', desc: 'Pembelian Produk A (Rp 5.200.000)', date: '14 Okt 2025', status: 'Lunas', color: 'green', detail: 'Tambahan 52 Poin' },
+                { id: 'KNC7901', desc: 'Pembelian Jasa B (Rp 850.000)', date: '15 Okt 2025', status: 'Diproses', color: 'yellow', detail: 'Status: Kirim Barang' },
+                { id: 'RED0051', desc: 'Penukaran Poin (Voucher Diskon Rp 50.000)', date: '10 Okt 2025', status: 'Redeem', color: 'indigo', detail: 'Pengurangan 500 Poin' },
+                { id: 'KNC7700', desc: 'Pembelian Produk C (Rp 1.000.000)', date: '01 Okt 2025', status: 'Selesai', color: 'green', detail: 'Tambahan 10 Poin' },
+            ]
+        };
+
+        // Fungsi untuk memformat angka menjadi format Rupiah (Contoh Sederhana)
+        const formatRupiah = (number) => {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number * 1000);
+        };
+
+        // Fungsi utama untuk menyisipkan data
+        function loadMemberData() {
+            // 1. PROFIL
+            const initials = userData.name.split(' ').map(n => n[0]).join('');
+            document.getElementById('user-initial').textContent = initials;
+            document.getElementById('user-name').textContent = userData.name;
+            
+            // 2. POIN DAN STATUS
+            document.getElementById('total-points').textContent = userData.points.toLocaleString('id-ID');
+            document.getElementById('member-status').textContent = userData.status;
+            
+            // Hitung nilai rupiah dari poin (asumsi 100 poin = Rp 10.000 -> 1 poin = Rp 100)
+            const pointValue = userData.points * 100;
+            document.getElementById('point-value').textContent = `Setara ${formatRupiah(pointValue)}`;
+
+            // 3. RIWAYAT TRANSAKSI
+            const transactionList = document.getElementById('transaction-list');
+            transactionList.innerHTML = ''; // Kosongkan dulu
+
+            userData.transactions.forEach(tx => {
+                const li = document.createElement('li');
+                li.className = 'py-3 flex justify-between items-center';
+                li.innerHTML = `
+                    <div>
+                        <p class="text-base text-gray-800 font-medium">${tx.desc}</p>
+                        <p class="text-sm text-gray-500">${tx.date} • ${tx.detail}</p>
+                    </div>
+                    <span class="px-3 py-1 text-xs font-semibold rounded-full bg-${tx.color}-100 text-${tx.color}-800">${tx.status}</span>
+                `;
+                transactionList.appendChild(li);
+            });
+        }
+
+        // Jalankan fungsi saat dokumen siap
+        document.addEventListener('DOMContentLoaded', loadMemberData);
+    </script>
+</body>
+
+</html>

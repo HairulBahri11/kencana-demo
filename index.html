@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kencana Store — Home (Dengan Slider)</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --kencana-blue: #E84158;
+      --accent: #2E3A67;
+      --muted: #6b7280;
+    }
+
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+        Roboto, "Helvetica Neue", Arial;
+    }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(11, 43, 72, 0.06);
+    }
+
+    .product-img {
+      height: 170px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg,
+          rgba(11, 43, 72, 0.03),
+          rgba(11, 43, 72, 0.01));
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    }
+
+    .price {
+      color: #c53030;
+      font-weight: 700;
+    }
+
+    .nav-link {
+      color: #111827;
+    }
+
+    /* Slider styles */
+    .hero-slider {
+      /* Tetap sama: Container utama, harus relatif agar slide absolut di dalamnya terikat */
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    .hero-slide {
+      /* HARUS ABSOLUT agar saling menumpuk */
+      position: absolute;
+      /* Memastikan slide menutupi seluruh area slider */
+      inset: 0;
+      /* Agar slide tidak aktif tidak terlihat */
+      opacity: 0;
+      /* Efek zoom-in ringan */
+      transform: scale(1.02);
+      /* Transisi untuk semua properti yang berubah */
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      /* Tambahkan Z-index rendah agar yang aktif bisa berada di atas */
+      z-index: 5;
+      /* Flexbox untuk memposisikan konten di dalam slide */
+      display: flex;
+      align-items: center;
+      /* Gambar di dalamnya perlu fill/cover */
+    }
+
+    .hero-slide.active {
+      /* Slide aktif harus terlihat */
+      opacity: 1;
+      /* Kembalikan ke skala normal */
+      transform: scale(1);
+      /* HARUS tetap ABSOLUT (HILANGKAN position: relative; dari slide aktif) */
+      /* Tingkatkan z-index agar berada di atas slide lainnya */
+      z-index: 10;
+    }
+
+    /* Gambar di dalam Slide */
+    .hero-slide img {
+      position: absolute;
+      /* Agar gambar mengisi penuh slide */
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      /* Penting agar gambar tidak terdistorsi */
+      z-index: 1;
+      /* Di bawah overlay */
+    }
+
+    /* Overlay */
+    .hero-overlay {
+      /* Overlay harus ABSOLUT dan menutupi slide */
+      position: absolute;
+      inset: 0;
+      /* Gradient yang Anda definisikan */
+      background: linear-gradient(90deg,
+          rgba(11, 43, 72, 0.72) 0%,
+          rgba(11, 43, 72, 0.32) 40%,
+          rgba(255, 255, 255, 0) 100%);
+      z-index: 2;
+      /* Di atas gambar */
+    }
+
+    /* Konten Hero */
+    .hero-content {
+      /* Konten harus relatif terhadap flex container (hero-slide) */
+      position: relative;
+      z-index: 3;
+      /* Di atas overlay */
+    }
+
+
+    /* Dots */
+    .slider-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      transition: background 0.3s ease;
+      /* Tambahkan transisi */
+    }
+
+    .slider-dot.active {
+      background: var(--accent);
+      /* Atau warna solid putih jika var(--accent) tidak didefinisikan */
+      /* Contoh warna solid yang lebih jelas: */
+      /* background: white; opacity: 1; */
+    }
+
+    /* Arrow Controls */
+    .slider-arrow {
+      background: rgba(11, 43, 72, 0.6);
+      color: white;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      /* Tambahkan transisi */
+    }
+
+    .slider-arrow:hover {
+      background: rgba(11, 43, 72, 0.8);
+      /* Efek hover */
+    }
+
+    @media (max-width: 768px) {
+      .hero-content {
+        padding: 24px;
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 20;
+        /* lebih tinggi dari .hero-overlay */
+        color: #ffffff;
+        text-shadow: 0 8px 20px rgba(2, 6, 23, 0.55);
+        /* membuat huruf 'pop' */
+      }
+
+      .product-img {
+        height: 130px;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50">
+  <!-- NAVBAR -->
+  <header class="bg-white shadow-sm sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-6">
+        <a href="#" class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 rounded-full bg-[color:var(--accent)] flex items-center justify-center font-bold text-[color:var(--kencana-blue)]">
+            K
+          </div>
+          <span class="text-xl font-semibold text-[color:var(--kencana-blue)]">Kencana Store</span>
+        </a>
+
+        <!-- desktop menu -->
+        <nav class="hidden lg:flex items-center gap-4 text-sm">
+          <a class="nav-link px-3 py-2 hover:text-[color:var(--kencana-blue)]" href="#">Home</a>
+
+          <!-- Profil Perusahaan dropdown -->
+          <div class="relative group">
+            <button class="flex items-center gap-2 px-3 py-2 nav-link">
+              Profil Perusahaan
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div class="absolute left-0 mt-2 hidden group-hover:block dropdown bg-white border rounded shadow-sm py-2">
+              <a href="#visi" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Visi</a>
+              <a href="#misi" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Misi</a>
+              <a href="#sejarah" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Sejarah</a>
+            </div>
+          </div>
+
+          <!-- Galeri dropdown -->
+          <div class="relative group">
+            <button class="flex items-center gap-2 px-3 py-2 nav-link">
+              Galeri
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div class="absolute left-0 mt-2 hidden group-hover:block dropdown bg-white border rounded shadow-sm py-2">
+              <a href="#sertifikasi" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Sertifikasi</a>
+              <a href="#galeri-proyek" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Galeri Proyek /
+                Produk</a>
+            </div>
+          </div>
+
+          <!-- Kontak dropdown -->
+          <div class="relative group">
+            <button class="flex items-center gap-2 px-3 py-2 nav-link">
+              Kontak
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div class="absolute left-0 mt-2 hidden group-hover:block dropdown bg-white border rounded shadow-sm py-2">
+              <a href="#info-cabang" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Informasi Cabang</a>
+              <a href="#kontak-perusahaan" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Kontak
+                Perusahaan</a>
+            </div>
+          </div>
+
+          <a class="nav-link px-3 py-2 hover:text-[color:var(--kencana-blue)]" href="member-area.html">Member Area</a>
+        </nav>
+      </div>
+
+      <!-- search + icons -->
+      <div class="flex items-center gap-3 w-full max-w-lg ml-6">
+        <div class="relative w-full">
+          <input id="search" type="text" placeholder="Cari Produk..."
+            class="w-full border rounded-full px-4 py-2 text-sm pl-10" />
+          <svg class="w-4 h-4 absolute left-3 top-2.5 text-gray-400" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35" />
+            <circle cx="11" cy="11" r="6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+          </svg>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button id="cartBtn" class="flex items-center gap-2 px-3 py-2 border rounded bg-white">
+            <svg class="w-5 h-5 text-[color:var(--kencana-blue)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4" />
+              <circle cx="9" cy="20" r="1" />
+              <circle cx="20" cy="20" r="1" />
+            </svg>
+            <span class="text-sm">Keranjang</span>
+            <span id="cartCountTop"
+              class="ml-1 text-sm bg-[color:var(--kencana-blue)] text-white px-2 py-0.5 rounded-full">0</span>
+          </button>
+
+          <!-- <button id="accountBtn" class="flex items-center gap-2 px-3 py-2 border rounded bg-white">
+            <svg class="w-5 h-5 text-[color:var(--kencana-blue)]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M5.121 17.804A7 7 0 0112 15a7 7 0 016.879 2.804M15 11a3 3 0 10-6 0 3 3 0 006 0z" />
+            </svg>
+            <span class="text-sm">Akun</span>
+          </button> -->
+
+          <a href="login-otp.html"
+            class="flex items-center gap-1 px-3 py-2 border rounded-full bg-white text-[color:var(--kencana-blue)] hover:bg-gray-100 transition duration-200">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M5.121 17.804A7 7 0 0112 15a7 7 0 016.879 2.804M15 11a3 3 0 10-6 0 3 3 0 006 0z" />
+            </svg>
+            <span class="text-sm hidden sm:inline">Login</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SLIDER -->
+  <section class="max-w-7xl mx-auto px-6 py-8">
+    <div class="hero-slider relative overflow-hidden h-64 lg:h-96 w-full rounded-lg shadow-lg">
+      <div class="hero-slide absolute inset-0 transition-opacity duration-500 opacity-100 z-10" data-index="0">
+        <img src="kencana.png" alt="Kencana - award" class="w-full h-full object-cover" />
+        <div class="hero-overlay absolute inset-0 bg-black bg-opacity-40"></div>
+        <div class="absolute inset-0 flex items-center">
+          <div class="hero-content max-w-2xl p-6 md:p-10 text-white">
+            <div class="badge mb-3 inline-block px-3 py-1 text-xs font-semibold rounded-full bg-red-600">
+              Promo Eksklusif
+            </div>
+            <h2 class="text-2xl lg:text-4xl font-bold">
+              Material Bangunan Berkualitas
+            </h2>
+            <p class="mt-3 text-sm lg:text-base">
+              Diskon hingga 15% untuk produk terpilih. Cek stok cabang dan pesan
+              tanpa registrasi.
+            </p>
+            <div class="mt-4 flex gap-3">
+              <a href="#produk"
+                class="px-4 py-2 bg-white text-[color:var(--kencana-blue)] rounded font-semibold hover:bg-gray-200 transition">Lihat
+                Produk</a>
+              <a href="#map"
+                class="px-4 py-2 border border-white rounded text-white hover:bg-white hover:text-[color:var(--kencana-blue)] transition">Cabang
+                Terdekat</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-slide absolute inset-0 transition-opacity duration-500 opacity-0 z-0" data-index="1">
+        <img src="factory1.jpg" alt="Pabrik Kencana" class="w-full h-full object-cover" />
+        <div class="hero-overlay absolute inset-0 bg-black bg-opacity-40"></div>
+        <div class="absolute inset-0 flex items-center justify-end">
+          <div class="hero-content max-w-2xl p-6 md:p-10 text-white text-right">
+            <div class="badge mb-3 inline-block px-3 py-1 text-xs font-semibold rounded-full bg-yellow-600">
+              Loyalty
+            </div>
+            <h2 class="text-2xl lg:text-4xl font-bold">
+              Program Poin & Redeem
+            </h2>
+            <p class="mt-3 text-sm lg:text-base">
+              Daftar jadi member untuk dapatkan poin setiap transaksi — atau
+              belanja sebagai guest, tetap mudah.
+            </p>
+            <div class="mt-4 flex gap-3 justify-end">
+              <a href="#member"
+                class="px-4 py-2 bg-white text-[color:var(--kencana-blue)] rounded font-semibold hover:bg-gray-200 transition">Jelajah
+                Member</a>
+              <a href="#produk"
+                class="px-4 py-2 border border-white rounded text-white hover:bg-white hover:text-[color:var(--kencana-blue)] transition">Belanja
+                Sekarang</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-slide absolute inset-0 transition-opacity duration-500 opacity-0 z-0" data-index="2">
+        <img src="factory2.jpg" alt="Pabrik Kencana" class="w-full h-full object-cover" />
+        <div class="hero-overlay absolute inset-0 bg-black bg-opacity-40"></div>
+        <div class="absolute inset-0 flex items-center">
+          <div class="hero-content max-w-2xl p-6 md:p-10 text-white">
+            <div class="badge mb-3 inline-block px-3 py-1 text-xs font-semibold rounded-full bg-blue-600">
+              Solusi Proyek
+            </div>
+            <h2 class="text-2xl lg:text-4xl font-bold">
+              Konsultasi & Supply Proyek
+            </h2>
+            <p class="mt-3 text-sm lg:text-base">
+              Kami bantu proyek Anda dari awal hingga selesai — hubungi tim sales
+              kami untuk solusi terbaik.
+            </p>
+            <div class="mt-4 flex gap-3">
+              <a href="#kontak-perusahaan"
+                class="px-4 py-2 bg-white text-[color:var(--kencana-blue)] rounded font-semibold hover:bg-gray-200 transition">Hubungi
+                Sales</a>
+              <a href="#galeri-proyek"
+                class="px-4 py-2 border border-white rounded text-white hover:bg-white hover:text-[color:var(--kencana-blue)] transition">Lihat
+                Proyek</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="absolute left-4 top-1/2 transform -translate-y-1/2 hidden lg:flex gap-3 z-20">
+        <div id="prevBtn" class="slider-arrow">
+          <svg xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6 text-white hover:text-gray-300 transition cursor-pointer drop-shadow-md" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </div>
+      </div>
+      <div class="absolute right-4 top-1/2 transform -translate-y-1/2 hidden lg:flex gap-3 z-20">
+        <div id="nextBtn" class="slider-arrow">
+          <svg xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6 text-white hover:text-gray-300 transition cursor-pointer drop-shadow-md" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+
+      <div class="absolute left-1/2 transform -translate-x-1/2 bottom-4 flex gap-2 z-20">
+        <div class="slider-dot w-3 h-3 rounded-full bg-white opacity-60 cursor-pointer transition active-dot"
+          data-dot="0"></div>
+        <div class="slider-dot w-3 h-3 rounded-full bg-white opacity-60 cursor-pointer transition" data-dot="1"></div>
+        <div class="slider-dot w-3 h-3 rounded-full bg-white opacity-60 cursor-pointer transition" data-dot="2"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUK TERBARU -->
+  <main class="max-w-7xl mx-auto px-6 py-10">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-semibold text-[color:var(--kencana-blue)]">
+        Produk Terbaru
+      </h2>
+      <a href="#produk-all" class="text-sm text-[color:var(--kencana-blue)] hover:underline">Lihat Semua</a>
+    </div>
+
+    <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <!-- product cards from JS -->
+    </div>
+  </main>
+
+  <!-- STORE MAP -->
+  <section id="map" class="bg-white py-10 border-t">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex items-start gap-8">
+        <div class="w-full lg:w-2/3 card p-4">
+          <h3 class="font-semibold text-[color:var(--kencana-blue)]">
+            Lokasi Cabang
+          </h3>
+          <p class="text-sm text-gray-600 mt-1">
+            Pilih cabang untuk cek stok & pickup.
+          </p>
+          <div class="mt-4 rounded overflow-hidden border">
+            <iframe width="100%" height="420" loading="lazy"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.149038028884!2d106.84513!3d-6.21462!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f3e4b8a9d6b9%3A0x8f3b1d7c1d6f1a8b!2sMonumen%20Nasional!5e0!3m2!1sen!2sid!4v1699999999999"
+              style="border: 0"></iframe>
+          </div>
+        </div>
+
+        <aside class="w-full lg:w-1/3">
+          <div class="card p-4 mb-4">
+            <h4 class="font-medium">Cabang Terdekat</h4>
+            <div class="mt-3 space-y-3">
+              <div class="flex items-start gap-3 border rounded p-3">
+                <div class="w-3/4">
+                  <div class="font-semibold">Kencana Store Jakarta</div>
+                  <div class="text-sm text-gray-500">
+                    Jl. Raya Contoh No.123, Jakarta
+                  </div>
+                </div>
+                <div>
+                  <button class="px-3 py-2 bg-[color:var(--kencana-blue)] text-white rounded text-sm selectBranch"
+                    data-branch="Jakarta">
+                    Pilih
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3 border rounded p-3">
+                <div class="w-3/4">
+                  <div class="font-semibold">Kencana Store Bandung</div>
+                  <div class="text-sm text-gray-500">
+                    Jl. Soekarno Hatta No.200, Bandung
+                  </div>
+                </div>
+                <div>
+                  <button class="px-3 py-2 bg-[color:var(--kencana-blue)] text-white rounded text-sm selectBranch"
+                    data-branch="Bandung">
+                    Pilih
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3 border rounded p-3">
+                <div class="w-3/4">
+                  <div class="font-semibold">Kencana Store Surabaya</div>
+                  <div class="text-sm text-gray-500">
+                    Jl. A. Yani No.118, Surabaya
+                  </div>
+                </div>
+                <div>
+                  <button class="px-3 py-2 bg-[color:var(--kencana-blue)] text-white rounded text-sm selectBranch"
+                    data-branch="Surabaya">
+                    Pilih
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card p-4">
+            <h4 class="font-medium">Cara Berbelanja (Guest)</h4>
+            <ol class="list-decimal ml-5 mt-2 text-sm text-gray-600">
+              <li>Pilih produk → Tambah ke Keranjang</li>
+              <li>Pilih metode pickup atau kirim</li>
+              <li>Isi data singkat lalu konfirmasi</li>
+            </ol>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-[color:var(--kencana-blue)] text-gray-100 mt-10">
+    <div class="max-w-7xl mx-auto px-6 pt-12 pb-8">
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 lg:gap-12">
+        <div class="col-span-2 md:col-span-1 lg:col-span-2">
+          <div class="flex items-center space-x-2">
+            <!-- <img
+            src="logo-kencana-white.png"
+            alt="Logo Kencana"
+            class="h-8"
+          /> -->
+            <span class="text-xl font-bold text-white">Kencana</span>
+          </div>
+          <p class="text-sm text-gray-300 mt-4 max-w-xs">
+            Penyedia bahan konstruksi dan solusi struktural modern terkemuka
+            di Indonesia.
+          </p>
+          <div class="flex space-x-4 mt-6">
+            <a href="#" class="text-gray-300 hover:text-white transition"><svg xmlns="http://www.w3.org/2000/svg"
+                width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.51-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z">
+                </path>
+              </svg>
+            </a>
+            <a href="#" class="text-gray-300 hover:text-white transition"><svg xmlns="http://www.w3.org/2000/svg"
+                width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.333 0-6.033 2.701-6.033 6.032 0 .474.052.937.138 1.383-5.004-.253-9.432-2.659-12.484-6.326-.517.882-.815 1.906-.815 3.003 0 2.085 1.056 3.962 2.662 5.064-.94-.029-1.831-.286-2.618-.708v.081c0 2.934 2.088 5.371 4.846 5.922-.403.11-.828.169-1.269.169-.31 0-.613-.03-.907-.083 1.037 3.064 4.078 5.291 7.632 5.352-2.088 1.63-4.724 2.607-7.59 2.607-.492 0-.979-.028-1.46-.085 2.709 1.74 5.95 2.748 9.423 2.748 11.378 0 17.58-9.488 17.58-17.58 0-.267-.015-.534-.039-.801.956-.695 1.79-1.564 2.456-2.553z">
+                </path>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <h5 class="font-semibold text-white tracking-wide">Produk & Solusi</h5>
+          <ul class="mt-4 text-sm text-gray-300 space-y-2">
+            <li><a href="#rangka" class="hover:text-white">Rangka Atap Baja</a></li>
+            <li><a href="#dinding" class="hover:text-white">Material Dinding</a></li>
+            <li><a href="#proyek" class="hover:text-white">Solusi Proyek</a></li>
+            <li><a href="#custom" class="hover:text-white">Layanan Kustom</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h5 class="font-semibold text-white tracking-wide">Perusahaan</h5>
+          <ul class="mt-4 text-sm text-gray-300 space-y-2">
+            <li><a href="#tentang" class="hover:text-white">Tentang Kami</a></li>
+            <li><a href="#karir" class="hover:text-white">Karir</a></li>
+            <li><a href="#berita" class="hover:text-white">Berita & Acara</a></li>
+            <li><a href="#cabang" class="hover:text-white">Lokasi Cabang</a></li>
+          </ul>
+        </div>
+
+        <div class="col-span-2 md:col-span-1">
+          <h5 class="font-semibold text-white tracking-wide">Bantuan & Kontak</h5>
+          <p class="text-sm text-gray-300 mt-4 space-y-2">
+            <span class="block">
+              <span class="font-medium">Email:</span>
+              <a href="mailto:info@kencanaindonesia.co.id" class="hover:text-white">info@kencanaindonesia.co.id</a>
+            </span>
+            <span class="block">
+              <span class="font-medium">Tel:</span>
+              <a href="tel:+622112345678" class="hover:text-white">(021) 1234 5678</a>
+            </span>
+            <span class="block text-xs mt-4">
+              Jl. Industri No. 123, Jakarta Pusat, Indonesia
+            </span>
+          </p>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-700 mt-10 pt-6">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <p class="text-xs text-gray-400 order-2 md:order-1 mt-4 md:mt-0">
+            © <span id="yearFooter"></span> Kencana Indonesia. All rights
+            reserved.
+          </p>
+          <div class="text-xs text-gray-400 space-x-4 order-1 md:order-2">
+            <a href="#syarat" class="hover:text-white">Syarat & Ketentuan</a>
+            <a href="#privasi" class="hover:text-white">Kebijakan Privasi</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Script sederhana untuk mengisi tahun saat ini secara otomatis
+    document.getElementById('yearFooter').textContent = new Date().getFullYear();
+  </script>
+
+  <div id="cartDrawer"
+    class="fixed right-6 bottom-6 w-96 max-w-[92%] transform translate-y-6 opacity-0 pointer-events-none transition-all z-50">
+    <div class="card p-4">
+      <div class="flex items-center justify-between">
+        <div class="font-semibold">Keranjang</div>
+        <div id="selectedBranchLabel" class="text-sm text-gray-500">
+          Pickup: -
+        </div>
+      </div>
+
+      <div id="cartItems" class="mt-3 max-h-64 overflow-auto space-y-3">
+      </div>
+
+      <div class="mt-4 border-t pt-3 flex items-center justify-between">
+        <div>
+          <div class="text-sm text-gray-500">Total</div>
+          <div class="text-lg font-semibold" id="cartTotal">Rp 0</div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <button id="btnCheckout" class="px-4 py-2 bg-[color:var(--accent)] text-[color:var(--kencana-blue)] rounded">
+            Checkout
+          </button>
+          <button id="btnClearCart" class="px-4 py-2 border rounded text-sm">
+            Kosongkan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="orderConfirm" class="fixed inset-0 hidden items-center justify-center z-70">
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="bg-white rounded p-6 card">
+      <div class="text-center">
+        <div class="text-3xl">✅</div>
+        <h3 class="mt-3 font-semibold text-[color:var(--kencana-blue)]">
+          Order Diterima
+        </h3>
+        <p class="text-sm text-gray-600 mt-2">
+          Nomor pesanan: <strong id="orderNo">-</strong>
+        </p>
+        <div class="mt-4">
+          <button id="closeConfirm" class="px-4 py-2 bg-[color:var(--kencana-blue)] text-white rounded">
+            Selesai
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- <div id="checkoutModal" class="fixed inset-0 hidden items-center justify-center z-[100]">
+    <div class="absolute inset-0 bg-black/40"></div>
+
+    <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 z-50 overflow-auto max-h-[90vh] p-6">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-[color:var(--kencana-blue)]">
+          Checkout (Guest)
+        </h3>
+        <button id="closeCheckout" class="text-gray-400 hover:text-gray-600 transition">
+          ✕
+        </button>
+      </div>
+
+      <form id="checkoutForm" class="mt-4 grid gap-4">
+        <div>
+          <label for="guestName" class="text-sm text-gray-600 block mb-1">Nama</label>
+          <input id="guestName" name="guestName" type="text"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[color:var(--kencana-blue)] focus:border-[color:var(--kencana-blue)] outline-none"
+            required />
+        </div>
+
+        <div>
+          <label for="guestPhone" class="text-sm text-gray-600 block mb-1">Telepon</label>
+          <input id="guestPhone" name="guestPhone" type="tel"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[color:var(--kencana-blue)] focus:border-[color:var(--kencana-blue)] outline-none"
+            required />
+        </div>
+
+        <div>
+          <label for="guestAddress" class="text-sm text-gray-600 block mb-1">Alamat (isi kalau pilih antar)</label>
+          <textarea id="guestAddress" name="guestAddress"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[color:var(--kencana-blue)] focus:border-[color:var(--kencana-blue)] outline-none"
+            rows="3"></textarea>
+        </div>
+
+        <div class="flex items-center justify-between pt-4 border-t mt-2">
+          <div class="text-base text-gray-700">Total Pembayaran</div>
+          <div class="text-xl font-bold text-[color:var(--kencana-blue)]" id="checkoutTotal">
+            Rp 0
+          </div>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button type="submit"
+            class="flex-1 px-4 py-2 bg-[color:var(--kencana-blue)] text-white font-medium rounded-lg hover:opacity-90 transition">
+            Konfirmasi Pesanan
+          </button>
+          <button type="button" id="cancelCheckout"
+            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+            Batal
+          </button>
+        </div>
+      </form>
+    </div>
+  </div> -->
+  <div id="checkoutModal" class="fixed inset-0 hidden items-center justify-center z-[100]">
+    <div class="absolute inset-0 bg-black/40 z-[90]"></div>
+
+    <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 z-[100] overflow-auto max-h-[90vh] p-6">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-[color:var(--kencana-blue)]">
+          Checkout (Guest)
+        </h3>
+        <button id="closeCheckout" class="text-gray-400 hover:text-gray-600 transition">
+          ✕
+        </button>
+      </div>
+
+      <form id="checkoutForm" class="mt-4 grid gap-4">
+        <div>
+          <label for="guestName" class="text-sm text-gray-600 block mb-1">Nama</label>
+          <input id="guestName" name="guestName" type="text"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[color:var(--kencana-blue)] focus:border-[color:var(--kencana-blue)] outline-none"
+            required />
+        </div>
+
+        <div>
+          <label for="guestPhone" class="text-sm text-gray-600 block mb-1">Telepon</label>
+          <input id="guestPhone" name="guestPhone" type="tel"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[color:var(--kencana-blue)] focus:border-[color:var(--kencana-blue)] outline-none"
+            required />
+        </div>
+
+        <div>
+          <label for="guestAddress" class="text-sm text-gray-600 block mb-1">Alamat (isi kalau pilih antar)</label>
+          <textarea id="guestAddress" name="guestAddress"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[color:var(--kencana-blue)] focus:border-[color:var(--kencana-blue)] outline-none"
+            rows="3"></textarea>
+        </div>
+        <div class="flex items-center justify-between pt-4 border-t mt-2">
+          <div class="text-base text-gray-700">Total Pembayaran</div>
+          <div class="text-xl font-bold text-[color:var(--kencana-blue)]" id="checkoutTotal">
+            Rp 0
+          </div>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button type="submit"
+            class="flex-1 px-4 py-2 bg-[color:var(--kencana-blue)] text-white font-medium rounded-lg hover:opacity-90 transition">
+            Konfirmasi Pesanan
+          </button>
+          <button type="button" id="cancelCheckout"
+            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+            Batal
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Sample products data & JS + Slider JS -->
+  <script>
+    /* -------------------------
+     PRODUCTS & CART LOGIC
+     ------------------------- */
+    const PRODUCTS = [
+      {
+        id: "P001",
+        title: "Panel Ceiling A",
+        price: 120000,
+        category: "Dekoratif / Arsitektural",
+        snippet: "Ceiling ringan, finishing rapi",
+        stock: true,
+      },
+      {
+        id: "P002",
+        title: "Louvre Vent 100",
+        price: 85000,
+        category: "Dekoratif / Arsitektural",
+        snippet: "Louvre aluminium tahan karat",
+        stock: true,
+      },
+      {
+        id: "P003",
+        title: "Pintu Steel Series",
+        price: 450000,
+        category: "Dekoratif / Arsitektural",
+        snippet: "Pintu tahan lama, modern",
+        stock: false,
+      },
+      {
+        id: "P101",
+        title: "Genteng Metal Roof",
+        price: 220000,
+        category: "Roofing & Walling",
+        snippet: "Genteng ringan & awet",
+        stock: true,
+      },
+      {
+        id: "P102",
+        title: "Atap Insulasi 5mm",
+        price: 175000,
+        category: "Roofing & Walling",
+        snippet: "Isolasi panas & suara",
+        stock: true,
+      },
+      {
+        id: "P201",
+        title: "Spring Clip Green",
+        price: 45000,
+        category: "Kerangka Green House",
+        snippet: "Klem cepat & kuat",
+        stock: true,
+      },
+      {
+        id: "P301",
+        title: "Rangka Baja Ringan 4m",
+        price: 680000,
+        category: "Struktural",
+        snippet: "Profil ringan & presisi",
+        stock: true,
+      },
+      {
+        id: "P302",
+        title: 'Pipa Galvanis 2"',
+        price: 150000,
+        category: "Struktural",
+        snippet: "Tahan korosi",
+        stock: true,
+      },
+      {
+        id: "P401",
+        title: "Talang Air Galvanis",
+        price: 98000,
+        category: "Pendukung",
+        snippet: "Talang awet & rapih",
+        stock: true,
+      },
+      {
+        id: "P402",
+        title: "Baut & Mur Set",
+        price: 25000,
+        category: "Pendukung",
+        snippet: "Set lengkap untuk instalasi",
+        stock: true,
+      },
+    ];
+
+    let cart = [];
+    let selectedBranch = "-";
+
+    const productsGrid = document.getElementById("productsGrid");
+    const cartCountTop = document.getElementById("cartCountTop");
+    const cartBtn = document.getElementById("cartBtn");
+    // const cartDrawer = document.getElementById("cartDrawer");
+    const cartItems = document.getElementById("cartItems");
+    const cartTotal = document.getElementById("cartTotal");
+    // const btnCheckout = document.getElementById("btnCheckout");
+    const btnClearCart = document.getElementById("btnClearCart");
+    // const checkoutModal = document.getElementById("checkoutModal");
+    const checkoutForm = document.getElementById("checkoutForm");
+    const checkoutTotal = document.getElementById("checkoutTotal");
+    const selectedBranchLabel = document.getElementById(
+      "selectedBranchLabel"
+    );
+
+    // Asumsi ini adalah tombol Checkout di modal keranjang/drawer
+const btnCheckout = document.getElementById('btnCheckout'); 
+const cartDrawer = document.getElementById('cartDrawer');
+const checkoutModal = document.getElementById('checkoutModal'); 
+
+btnCheckout.addEventListener('click', () => {
+    // 1. Sembunyikan keranjang (cartDrawer)
+    cartDrawer.classList.add('hidden', 'opacity-0', 'pointer-events-none');
+    cartDrawer.classList.remove('flex', 'opacity-100', 'translate-y-0');
+
+    // 2. Tampilkan modal checkout
+    checkoutModal.classList.remove('hidden');
+    checkoutModal.classList.add('flex'); // Menggunakan 'flex' karena Anda menggunakan 'items-center justify-center' di dalamnya
+});
+
+// Pastikan tombol Batal dan Tutup modal juga menyembunyikannya:
+document.getElementById('closeCheckout').addEventListener('click', () => {
+    checkoutModal.classList.add('hidden');
+    checkoutModal.classList.remove('flex');
+});
+
+document.getElementById('cancelCheckout').addEventListener('click', () => {
+    checkoutModal.classList.add('hidden');
+    checkoutModal.classList.remove('flex');
+});
+
+    function currency(v) {
+      return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        maximumFractionDigits: 0,
+      }).format(v);
+    }
+
+    function renderProducts(list = PRODUCTS) {
+      productsGrid.innerHTML = "";
+      list.forEach((p) => {
+        const div = document.createElement("div");
+        div.className = "card overflow-hidden";
+        div.innerHTML = `
+          <div class="product-img p-4">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg?text=${encodeURIComponent(
+          p.title
+        )}" alt="${p.title}" class="object-contain h-full w-full" />
+          </div>
+          <div class="p-4">
+            <div class="flex items-center justify-between">
+              <div class="font-medium text-[color:var(--kencana-blue)]">${p.title
+          }</div>
+              <div class="text-sm text-gray-500">${p.stock ? "Ready" : "Habis"
+          }</div>
+            </div>
+            <div class="mt-2 text-sm text-gray-600">${p.snippet}</div>
+            <div class="mt-4 flex items-center justify-between">
+              <div class="price">${currency(p.price)}</div>
+              <div class="flex gap-2">
+                <button ${p.stock ? "" : "disabled"
+          } class="px-3 py-1 border rounded text-sm addCartBtn" data-id="${p.id
+          }">+ Keranjang</button>
+                <button class="px-3 py-1 bg-white border rounded text-sm viewBtn" data-id="${p.id
+          }">Detail</button>
+              </div>
+            </div>
+          </div>
+        `;
+        productsGrid.appendChild(div);
+      });
+      attachProductListeners();
+    }
+
+    function attachProductListeners() {
+      document.querySelectorAll(".addCartBtn").forEach((b) => {
+        b.addEventListener("click", (e) => {
+          const id = b.getAttribute("data-id");
+          const p = PRODUCTS.find((x) => x.id === id);
+          addToCart(p);
+        });
+      });
+      document.querySelectorAll(".viewBtn").forEach((b) => {
+        b.addEventListener("click", (e) => {
+          const id = b.getAttribute("data-id");
+          const p = PRODUCTS.find((x) => x.id === id);
+          alert(
+            `${p.title}\n\n${p.snippet}\nHarga: ${currency(
+              p.price
+            )}\nStatus: ${p.stock ? "Ready" : "Habis"}`
+          );
+        });
+      });
+    }
+
+    function addToCart(prod) {
+      const ex = cart.find((i) => i.id === prod.id);
+      if (ex) ex.qty++;
+      else cart.push({ ...prod, qty: 1 });
+      updateCartUI();
+      showCart(true);
+    }
+    function updateCartUI() {
+      cartItems.innerHTML = "";
+      let total = 0;
+      cart.forEach((item) => {
+        total += item.price * item.qty;
+        const row = document.createElement("div");
+        row.className = "flex items-center justify-between border-b pb-3";
+        row.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-gray-50 rounded flex items-center justify-center text-sm">${item.id
+          }</div>
+            <div>
+              <div class="font-medium text-sm">${item.title}</div>
+              <div class="text-xs text-gray-500">${currency(item.price)} • x${item.qty
+          }</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="px-2 py-1 border rounded qty-dec" data-id="${item.id
+          }">-</button>
+            <button class="px-2 py-1 border rounded qty-inc" data-id="${item.id
+          }">+</button>
+          </div>
+        `;
+        cartItems.appendChild(row);
+      });
+      cartTotal.textContent = currency(total);
+      cartCountTop.textContent = cart.reduce((s, i) => s + i.qty, 0);
+      document.querySelectorAll(".qty-inc").forEach((b) =>
+        b.addEventListener("click", () => {
+          const id = b.getAttribute("data-id");
+          cart.find((i) => i.id === id).qty++;
+          updateCartUI();
+        })
+      );
+      document.querySelectorAll(".qty-dec").forEach((b) =>
+        b.addEventListener("click", () => {
+          const id = b.getAttribute("data-id");
+          const idx = cart.findIndex((i) => i.id === id);
+          if (idx > -1) {
+            cart[idx].qty--;
+            if (cart[idx].qty <= 0) cart.splice(idx, 1);
+            updateCartUI();
+          }
+        })
+      );
+    }
+
+    function showCart(show = true) {
+      if (show) {
+        cartDrawer.style.transform = "translateY(0)";
+        cartDrawer.style.opacity = "1";
+        cartDrawer.style.pointerEvents = "auto";
+      } else {
+        cartDrawer.style.transform = "translateY(6px)";
+        cartDrawer.style.opacity = "0";
+        cartDrawer.style.pointerEvents = "none";
+      }
+    }
+
+    cartBtn.addEventListener("click", () => showCart(true));
+    btnClearCart.addEventListener("click", () => {
+      if (confirm("Kosongkan keranjang?")) {
+        cart = [];
+        updateCartUI();
+      }
+    });
+
+    document.querySelectorAll(".selectBranch").forEach((b) => {
+      b.addEventListener("click", () => {
+        selectedBranch = b.getAttribute("data-branch");
+        selectedBranchLabel.textContent = "Pickup: " + selectedBranch;
+        alert("Cabang dipilih: " + selectedBranch);
+      });
+    });
+
+    btnCheckout.addEventListener("click", () => {
+      if (cart.length === 0) {
+        alert("Keranjang kosong");
+        return;
+      }
+      const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      checkoutTotal.textContent = currency(subtotal);
+      checkoutModal.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    });
+    document
+      .getElementById("closeCheckout")
+      .addEventListener("click", closeCheckout);
+    document
+      .getElementById("cancelCheckout")
+      .addEventListener("click", closeCheckout);
+    function closeCheckout() {
+      checkoutModal.classList.add("hidden");
+      document.body.style.overflow = "";
+    }
+
+    checkoutForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("guestName").value.trim();
+      const phone = document.getElementById("guestPhone").value.trim();
+      if (!name || !phone) {
+        alert("Nama & telepon wajib diisi");
+        return;
+      }
+      const orderId = "KS" + Date.now().toString().slice(-6);
+      document.getElementById("orderNo").textContent = orderId;
+      cart = [];
+      updateCartUI();
+      closeCheckout();
+      
+      
+    });
+
+    document.getElementById("closeConfirm").addEventListener("click", () => {
+      document.getElementById("orderConfirm").classList.add("hidden");
+      document.body.style.overflow = "";
+    });
+
+    document.getElementById("search").addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const filtered = PRODUCTS.filter(
+        (p) =>
+          p.title.toLowerCase().includes(q) ||
+          p.snippet.toLowerCase().includes(q)
+      );
+      renderProducts(filtered);
+    });
+
+    renderProducts();
+    document.getElementById("yearFooter").textContent =
+      new Date().getFullYear();
+
+    /* -------------------------
+     SLIDER LOGIC
+     ------------------------- */
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".hero-slide"));
+      const dots = Array.from(document.querySelectorAll(".slider-dot"));
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      let current = 0;
+      let autoplay = true;
+      let interval = null;
+      const AUTOPLAY_MS = 5000;
+
+      function goTo(index) {
+        slides.forEach((s) => s.classList.remove("active"));
+        dots.forEach((d) => d.classList.remove("active"));
+        current = (index + slides.length) % slides.length;
+        slides[current].classList.add("active");
+        dots[current].classList.add("active");
+      }
+
+      function next() {
+        goTo(current + 1);
+      }
+      function prev() {
+        goTo(current - 1);
+      }
+
+      // attach controls
+      nextBtn &&
+        nextBtn.addEventListener("click", () => {
+          next();
+          resetAutoplay();
+        });
+      prevBtn &&
+        prevBtn.addEventListener("click", () => {
+          prev();
+          resetAutoplay();
+        });
+      dots.forEach((d) =>
+        d.addEventListener("click", (e) => {
+          const i = Number(d.getAttribute("data-dot"));
+          goTo(i);
+          resetAutoplay();
+        })
+      );
+
+      // pause on hover
+      const sliderEl = document.querySelector(".hero-slider");
+      sliderEl.addEventListener("mouseenter", () => (autoplay = false));
+      sliderEl.addEventListener("mouseleave", () => {
+        autoplay = true;
+        resetAutoplay();
+      });
+
+      function startAutoplay() {
+        if (interval) clearInterval(interval);
+        interval = setInterval(() => {
+          if (autoplay) next();
+        }, AUTOPLAY_MS);
+      }
+      function resetAutoplay() {
+        autoplay = true;
+        startAutoplay();
+      }
+
+      // init
+      goTo(0);
+      startAutoplay();
+      // make slides accessible: allow left/right arrow keys
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight") {
+          next();
+          resetAutoplay();
+        }
+        if (e.key === "ArrowLeft") {
+          prev();
+          resetAutoplay();
+        }
+      });
+    })();
+  </script>
+</body>
+
+</html>
