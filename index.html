@@ -850,6 +850,7 @@
         price: 120000,
         category: "Dekoratif / Arsitektural",
         snippet: "Ceiling ringan, finishing rapi",
+        url_img: "https://id.pvcpanelchina.com/uploads/202334835/white-pvc-ceiling-panelsc71d0f4e-4fed-441a-88b3-144a09284153.jpg",
         stock: true,
       },
       {
@@ -858,6 +859,7 @@
         price: 85000,
         category: "Dekoratif / Arsitektural",
         snippet: "Louvre aluminium tahan karat",
+        url_img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnfxIEAPNi00H1vA5Ydp5Duz6AsTjxdfxu_g&s",
         stock: true,
       },
       {
@@ -866,6 +868,7 @@
         price: 450000,
         category: "Dekoratif / Arsitektural",
         snippet: "Pintu tahan lama, modern",
+        url_img: "https://image1ws.indotrading.com/s3/productimages/webp/co228746/p778244/w300-h300/fe89573f-0209-4c1b-8899-94e65e2fa858.png",
         stock: false,
       },
       {
@@ -874,6 +877,7 @@
         price: 220000,
         category: "Roofing & Walling",
         snippet: "Genteng ringan & awet",
+        url_img: "https://agenbajaringan.com/img/genteng-metal.png",
         stock: true,
       },
       {
@@ -882,6 +886,7 @@
         price: 175000,
         category: "Roofing & Walling",
         snippet: "Isolasi panas & suara",
+        url_img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQezJFWtbbuMTX18v7CaDS-_jv93an4e5h18A&s",
         stock: true,
       },
       {
@@ -890,6 +895,7 @@
         price: 45000,
         category: "Kerangka Green House",
         snippet: "Klem cepat & kuat",
+        url_img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSmb-HFHwIl4XasXloHWmq4puQ1U46_gDQjkw&s",
         stock: true,
       },
       {
@@ -898,6 +904,7 @@
         price: 680000,
         category: "Struktural",
         snippet: "Profil ringan & presisi",
+        url_img: "https://kontainerindonesia.co.id/blog/wp-content/uploads/2024/08/Profil-Baja-Ringan-U-600x375.webp",
         stock: true,
       },
       {
@@ -906,6 +913,7 @@
         price: 150000,
         category: "Struktural",
         snippet: "Tahan korosi",
+        url_img: "https://image.menarasinarbaja.co.id/s3/productimages/webp/co244175/p1201966/w600-h600/1a763e6f-bb8d-4996-93b4-67e28d92afd0.jpg",
         stock: true,
       },
       {
@@ -914,6 +922,7 @@
         price: 98000,
         category: "Pendukung",
         snippet: "Talang awet & rapih",
+        url_img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnN0O45GM3AP7tuC6-m4A7T1LV1646LZ-Dhw&s",
         stock: true,
       },
       {
@@ -922,6 +931,7 @@
         price: 25000,
         category: "Pendukung",
         snippet: "Set lengkap untuk instalasi",
+        url_img: "https://siplah-oss.tokoladang.co.id/merchant/21614/product/5mSwdgqNn0iqH1QneCRYWCNDOLcMog212QOD7Ux5.webp",
         stock: true,
       },
     ];
@@ -985,9 +995,7 @@ document.getElementById('cancelCheckout').addEventListener('click', () => {
         div.className = "card overflow-hidden";
         div.innerHTML = `
           <div class="product-img p-4">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg?text=${encodeURIComponent(
-          p.title
-        )}" alt="${p.title}" class="object-contain h-full w-full" />
+            <img src="${p.url_img}" alt="${p.title}" class="object-contain h-full w-full" />
           </div>
           <div class="p-4">
             <div class="flex items-center justify-between">
