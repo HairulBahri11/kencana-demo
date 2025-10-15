@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Dashboard CMS Interaktif</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+    <style>
+        :root{
+            --kencana-blue: #E84158;
+            --accent: #2E3A67;
+            --muted: #6b7280;
+        }
+
+        body { background-color: #f8fafc; }
+
+        /* Sidebar */
+        .sidebar-bg { background-color: var(--accent); }
+        .nav-link { transition: all .18s ease-in-out; display: block; }
+        .nav-link:hover { background-color: #3f507b; border-left: 4px solid var(--kencana-blue); }
+        .nav-link.active { background-color: #3f507b; border-left: 4px solid var(--kencana-blue); font-weight:600; }
+        .btn-kencana { background-color: var(--kencana-blue); transition: background-color .25s; }
+        .btn-kencana:hover { background-color: #c4384b; }
+
+        /* map */
+        #mapid { height: 420px; width: 100%; border-radius: 8px; margin-top: 8px; }
+
+        /* Mobile sidebar handling */
+        #sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 40;
+            transform: translateX(-110%);
+            transition: transform .28s ease-in-out;
+            height: 100vh;
+            overflow-y: auto;
+            width: 18rem; /* Use the same width as desktop for consistency: 18rem = 288px */
+        }
+        #sidebar.open { transform: translateX(0); }
+
+        /* overlay */
+        #sidebar-overlay { transition: opacity .28s ease-in-out; }
+
+        /* Desktop: show sidebar */
+        @media (min-width:768px){
+            #sidebar {
+                transform: translateX(0) !important;
+                position: sticky; /* JANGAN STATIC, agar tetap di tempat saat konten panjang */
+                height: 100vh; /* Sesuaikan tinggi */
+                overflow-y: auto;
+                width: 18rem; /* Tetapkan lebar untuk desktop: 18rem (288px) */
+            }
+            #sidebar-overlay { display: none !important; }
+
+            /* Penyesuaian Main Content: Hapus margin-left yang tidak perlu */
+            main { margin-left: 0 !important; } 
+        }
+
+        /* tables responsive */
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+        /* theme helpers used in markup */
+        .border-kencana { border-color: var(--kencana-blue); }
+        .text-kencana { color: var(--kencana-blue); }
+
+        /* input focus visual (uses theme color) */
+        input:focus, textarea:focus, select:focus { outline: none; box-shadow: 0 0 0 4px rgba(232,65,88,0.08); border-color: var(--kencana-blue); }
+    </style>
+</head>
+<body class="font-sans text-gray-800 md:flex">
+
+    <aside id="sidebar" class="sidebar-bg text-white shadow-2xl md:w-72"> 
+        <div class="p-6">
+            <h2 class="text-2xl md:text-3xl font-bold mb-6 text-center tracking-wider">CMS PANEL</h2>
+        </div>
+        <nav class="space-y-2 px-2" id="sidebar-menu">
+            <a href="#dashboard" class="nav-link px-4 py-3 rounded-md active" data-target="dashboard"><span class="mr-3">🏠</span> Dashboard Utama</a>
+            <a href="#member" class="nav-link px-4 py-3 rounded-md" data-target="member"><span class="mr-3">👤</span> Manajemen Member</a>
+            <a href="#produk" class="nav-link px-4 py-3 rounded-md" data-target="produk"><span class="mr-3">📦</span> Manajemen Produk</a>
+            <a href="#store" class="nav-link px-4 py-3 rounded-md" data-target="store"><span class="mr-3">🏢</span> Manajemen Store</a>
+            <a href="#" class="nav-link px-4 py-3 rounded-md"><span class="mr-3">⚙️</span> Pengaturan</a>
+            <a href="#" class="nav-link px-4 py-3 rounded-md text-red-300 hover:!bg-red-800"><span class="mr-3">🚪</span> Logout</a>
+        </nav>
+    </aside>
+
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-0 pointer-events-none z-30 md:hidden"></div>
+
+    <main class="flex-1 min-h-screen"> 
+        <header class="bg-white p-4 md:p-6 rounded-b-lg shadow mb-6 flex items-center justify-between sticky top-0 z-20">
+            <div class="flex items-center gap-3">
+                <button id="sidebar-toggle" class="md:hidden p-2 rounded hover:bg-gray-100 text-gray-600" aria-label="Buka sidebar">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <h1 class="text-lg md:text-2xl font-bold truncate">Panel Administrasi</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-xs md:text-sm text-gray-500 hidden sm:inline">Admin Kencana | 15 Okt 2025</span>
+                <button class="p-2 rounded hover:bg-gray-100 text-gray-600" title="Notifikasi">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="px-4 md:px-8 pb-12">
+            <section id="content-dashboard" class="content-section">
+                <h2 class="text-xl md:text-2xl font-bold mb-6 text-kencana" style="color:var(--kencana-blue)">Overview Dashboard</h2>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+                    <div class="bg-white p-5 rounded-xl shadow-lg border-l-4 border-kencana">
+                        <p class="text-sm text-gray-500">Total Member</p>
+                        <p class="text-2xl md:text-3xl font-bold mt-1">2.340</p>
+                        <p class="text-xs text-green-500 mt-2">▲ 4.2% dari bulan lalu</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-lg border-l-4 border-green-500">
+                        <p class="text-sm text-gray-500">Transaksi Hari Ini</p>
+                        <p class="text-2xl md:text-3xl font-bold mt-1">Rp 23.450.000</p>
+                        <p class="text-xs text-green-500 mt-2">▲ 2.1% dari kemarin</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-lg border-l-4 border-indigo-500">
+                        <p class="text-sm text-gray-500">Produk Aktif</p>
+                        <p class="text-2xl md:text-3xl font-bold mt-1">68</p>
+                        <p class="text-xs text-red-500 mt-2">▼ 0.2% (perlu review stok)</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-lg border-l-4 border-yellow-500">
+                        <p class="text-sm text-gray-500">Cabang Aktif</p>
+                        <p class="text-2xl md:text-3xl font-bold mt-1">5</p>
+                        <p class="text-xs text-gray-500 mt-2">Stabil</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 md:p-6 rounded-lg shadow-md mb-8">
+                    <h3 class="text-lg md:text-xl font-semibold mb-4">Grafik Penjualan Bulanan (Juta IDR)</h3>
+                    <div class="h-64 md:h-96">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section id="content-member" class="content-section hidden">
+                <h3 class="text-xl md:text-2xl font-bold mb-6" style="color:var(--kencana-blue)">👤 Manajemen Member</h3>
+                <div class="bg-white p-4 md:p-6 rounded-lg shadow-md mb-8 border-l-4 border-kencana">
+                    <p class="text-gray-600 mb-4">Kelola profil, poin, *redeem*, dan riwayat transaksi member.</p>
+                    <button class="btn-kencana text-white py-2 px-4 rounded-lg font-medium mb-4 shadow-md hover:shadow-lg text-sm" onclick="showModal('addMemberModal')">
+                        ➕ Tambah Member Baru
+                    </button>
+
+                    <div class="table-responsive">
+                        <table class="min-w-full divide-y divide-gray-200 bg-white">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID Member</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Member</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Poin Saat Ini</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Transaksi</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-4 py-3 text-sm font-medium">M001</td>
+                                    <td class="px-4 py-3 font-medium text-gray-900">Budi Santoso</td>
+                                    <td class="px-4 py-3 text-sm text-gray-600">budi.santoso@mail.com</td>
+                                    <td class="px-4 py-3 text-sm font-semibold text-green-600">1.250</td>
+                                    <td class="px-4 py-3 text-sm">Rp 12.450.000</td>
+                                    <td class="px-4 py-3 text-sm">
+                                        <button class="text-indigo-600 hover:text-indigo-900 mr-2 p-1 rounded-md bg-indigo-100 text-xs">Lihat Profil/Poin</button>
+                                        <button class="text-red-600 hover:text-red-900 p-1 rounded-md bg-red-100 text-xs">Riwayat Transaksi</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 text-sm font-medium">M002</td>
+                                    <td class="px-4 py-3 font-medium text-gray-900">Citra Dewi</td>
+                                    <td class="px-4 py-3 text-sm text-gray-600">citra.dewi@mail.com</td>
+                                    <td class="px-4 py-3 text-sm font-semibold text-green-600">450</td>
+                                    <td class="px-4 py-3 text-sm">Rp 3.200.000</td>
+                                    <td class="px-4 py-3 text-sm">
+                                        <button class="text-indigo-600 hover:text-indigo-900 mr-2 p-1 rounded-md bg-indigo-100 text-xs">Lihat Profil/Poin</button>
+                                        <button class="text-red-600 hover:text-red-900 p-1 rounded-md bg-red-100 text-xs">Riwayat Transaksi</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 text-sm font-medium">M003</td>
+                                    <td class="px-4 py-3 font-medium text-gray-900">Agus Wijaya</td>
+                                    <td class="px-4 py-3 text-sm text-gray-600">agus.wijaya@mail.com</td>
+                                    <td class="px-4 py-3 text-sm font-semibold text-green-600">320</td>
+                                    <td class="px-4 py-3 text-sm">Rp 1.780.000</td>
+                                    <td class="px-4 py-3 text-sm">
+                                        <button class="text-indigo-600 hover:text-indigo-900 mr-2 p-1 rounded-md bg-indigo-100 text-xs">Lihat Profil/Poin</button>
+                                        <button class="text-red-600 hover:text-red-900 p-1 rounded-md bg-red-100 text-xs">Riwayat Transaksi</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="content-produk" class="content-section hidden">
+                <h3 class="text-xl md:text-2xl font-bold mb-6" style="color:var(--kencana-blue)">📦 Manajemen Produk</h3>
+                <div class="bg-white p-4 md:p-6 rounded-lg shadow-md mb-8 border-l-4 border-kencana">
+                    <p class="text-gray-600 mb-4">CRUD produk & promo, pengaturan banner, periode promo, dan stok per cabang.</p>
+                    <button class="btn-kencana text-white py-2 px-4 rounded-lg font-medium mb-4 shadow-md hover:shadow-lg text-sm">➕ Tambah Produk/Promo Baru</button>
+
+                    <div class="table-responsive">
+                        <table class="min-w-full divide-y divide-gray-200 bg-white">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Produk</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga (IDR)</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status Promo</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stok Pusat</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-4 py-4 font-medium text-gray-900">Semen Tiga Roda 50kg</td>
+                                    <td class="px-4 py-4">Rp 72.000</td>
+                                    <td class="px-4 py-4 text-gray-600">Tidak</td>
+                                    <td class="px-4 py-4 font-medium text-indigo-600">340 zak</td>
+                                    <td class="px-4 py-4 text-sm">
+                                        <button class="text-yellow-600 mr-2 p-1 rounded-md bg-yellow-100 text-xs">Edit</button>
+                                        <button class="text-red-600 p-1 rounded-md bg-red-100 text-xs">Hapus</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-4 font-medium text-gray-900">Cat Dulux 5L</td>
+                                    <td class="px-4 py-4">Rp 155.000</td>
+                                    <td class="px-4 py-4 font-bold text-kencana">Promo (hingga 31 Okt)</td>
+                                    <td class="px-4 py-4 font-medium text-indigo-600">120 kaleng</td>
+                                    <td class="px-4 py-4 text-sm">
+                                        <button class="text-yellow-600 mr-2 p-1 rounded-md bg-yellow-100 text-xs">Edit</button>
+                                        <button class="text-red-600 p-1 rounded-md bg-red-100 text-xs">Hapus</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-4 font-medium text-gray-900">Besi Beton Ø12 (per batang)</td>
+                                    <td class="px-4 py-4">Rp 95.000</td>
+                                    <td class="px-4 py-4 text-gray-600">Tidak</td>
+                                    <td class="px-4 py-4 font-medium text-indigo-600">520 batang</td>
+                                    <td class="px-4 py-4 text-sm">
+                                        <button class="text-yellow-600 mr-2 p-1 rounded-md bg-yellow-100 text-xs">Edit</button>
+                                        <button class="text-red-600 p-1 rounded-md bg-red-100 text-xs">Hapus</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-4 font-medium text-gray-900">Keramik 60x60 (box)</td>
+                                    <td class="px-4 py-4">Rp 185.000</td>
+                                    <td class="px-4 py-4 text-gray-600">Tidak</td>
+                                    <td class="px-4 py-4 font-medium text-indigo-600">60 box</td>
+                                    <td class="px-4 py-4 text-sm">
+                                        <button class="text-yellow-600 mr-2 p-1 rounded-md bg-yellow-100 text-xs">Edit</button>
+                                        <button class="text-red-600 p-1 rounded-md bg-red-100 text-xs">Hapus</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </section>
+
+            <section id="content-store" class="content-section hidden">
+                <h3 class="text-xl md:text-2xl font-bold mb-6" style="color:var(--kencana-blue)">🏢 Manajemen Store</h3>
+                <div class="bg-white p-4 md:p-6 rounded-lg shadow-md mb-8 border-l-4 border-kencana">
+                    <p class="text-gray-600 mb-4">Kelola daftar cabang, koordinat geografis, radius layanan, dan rute.</p>
+                    <button class="btn-kencana text-white py-2 px-4 rounded-lg font-medium mb-4 shadow-md hover:shadow-lg text-sm">➕ Tambah Cabang Baru</button>
+
+                    <div class="table-responsive">
+                        <table class="min-w-full divide-y divide-gray-200 bg-white">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Cabang</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kota</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Radius Layanan</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-4 py-4 font-medium text-gray-900">Store Utama Denpasar</td>
+                                    <td class="px-4 py-4">Denpasar</td>
+                                    <td class="px-4 py-4 font-semibold text-blue-600">5 km</td>
+                                    <td class="px-4 py-4"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span></td>
+                                    <td class="px-4 py-4 text-sm">
+                                        <button class="text-indigo-600 mr-2 p-1 rounded-md bg-indigo-100 text-xs" onclick="showMap(1)">Lihat di Peta</button>
+                                        <button class="text-green-600 p-1 rounded-md bg-green-100 text-xs">Rute</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-4 font-medium text-gray-900">Store Jimbaran</td>
+                                    <td class="px-4 py-4">Jimbaran</td>
+                                    <td class="px-4 py-4 font-semibold text-blue-600">7 km</td>
+                                    <td class="px-4 py-4"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span></td>
+                                    <td class="px-4 py-4 text-sm">
+                                        <button class="text-indigo-600 mr-2 p-1 rounded-md bg-indigo-100 text-xs" onclick="showMap(2)">Lihat di Peta</button>
+                                        <button class="text-green-600 p-1 rounded-md bg-green-100 text-xs">Rute</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-4 font-medium text-gray-900">Store Mengwi</td>
+                                    <td class="px-4 py-4">Mengwi</td>
+                                    <td class="px-4 py-4 font-semibold text-blue-600">6 km</td>
+                                    <td class="px-4 py-4"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Buka Terbatas</span></td>
+                                    <td class="px-4 py-4 text-sm">
+                                        <button class="text-indigo-600 mr-2 p-1 rounded-md bg-indigo-100 text-xs" onclick="showMap(3)">Lihat di Peta</button>
+                                        <button class="text-green-600 p-1 rounded-md bg-green-100 text-xs">Rute</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+                <div class="bg-white p-4 md:p-6 rounded-lg shadow-md mt-6">
+                    <h4 class="text-lg font-semibold mb-2">Peta Cabang dan Radius Layanan</h4>
+                    <div id="mapid"></div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <div id="addMemberModal" class="fixed inset-0 bg-gray-600 bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg m-4 p-6">
+            <div class="flex justify-between items-start border-b pb-3">
+                <h3 class="text-xl font-semibold">Tambah Member Baru</h3>
+                <button class="text-gray-400 hover:text-gray-900" onclick="closeModal('addMemberModal')">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <form id="addMemberForm" class="mt-4 space-y-4">
+                <div>
+                    <label for="member_name" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                    <input id="member_name" name="member_name" type="text" required class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[--kencana-blue]" placeholder="Masukkan nama member">
+                </div>
+                <div>
+                    <label for="member_email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input id="member_email" name="member_email" type="email" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="example@domain.com">
+                </div>
+                <div>
+                    <label for="member_phone" class="block text-sm font-medium text-gray-700">Nomor Telepon</label>
+                    <input id="member_phone" name="member_phone" type="tel" required class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Cth: 08123456789">
+                </div>
+                <div>
+                    <label for="initial_points" class="block text-sm font-medium text-gray-700">Poin Awal (Opsional)</label>
+                    <input id="initial_points" name="initial_points" type="number" value="0" min="0" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" class="bg-gray-200 text-gray-700 py-2 px-4 rounded" onclick="closeModal('addMemberModal')">Batal</button>
+                    <button type="submit" class="btn-kencana text-white py-2 px-4 rounded">Simpan Member</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        /* ---------- Dummy data for stores (building material store demo) ---------- */
+        const storeData = [
+            { id: 1, lat: -8.6500, lon: 115.2167, radius: 5000, name: 'Store Utama Denpasar', address: 'Jl. Gatot Subroto No.10, Denpasar', omzet: 125000000 },
+            { id: 2, lat: -8.7890, lon: 115.1600, radius: 7000, name: 'Store Jimbaran', address: 'Jl. Uluwatu No.25, Jimbaran', omzet: 76000000 },
+            { id: 3, lat: -8.5600, lon: 115.1800, radius: 6000, name: 'Store Mengwi', address: 'Jl. Raya Mengwi No.3', omzet: 42000000 }
+        ];
+
+        /* ---------- Chart Initialization ---------- */
+        function initializeChart() {
+            const canvas = document.getElementById('salesChart');
+            if (!canvas) return;
+
+            // destroy previous instance if exists
+            if (window.mySalesChart) window.mySalesChart.destroy();
+
+            const salesData = {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                datasets: [{
+                    label: 'Penjualan Bulanan (Juta IDR)',
+                    data: [120, 150, 135, 180, 210, 205, 195, 230, 245, 260, 275, 290],
+                    borderColor: 'rgb(232,65,88)',
+                    backgroundColor: 'rgba(232,65,88,0.12)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 3
+                }]
+            };
+
+            const ctx = canvas.getContext('2d');
+            window.mySalesChart = new Chart(ctx, {
+                type: 'line',
+                data: salesData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { callback: v => v + ' jt' } } }
+                }
+            });
+        }
+
+        /* ---------- Leaflet Map Initialization ---------- */
+        let mymap = null;
+        function initializeMap() {
+            const container = document.getElementById('mapid');
+            if (!container) return;
+
+            // remove existing map to avoid duplications
+            if (mymap) {
+                try { mymap.remove(); } catch (e) { /* ignore */ }
+                mymap = null;
+            }
+
+            // default center: first store
+            const center = [storeData[0].lat, storeData[0].lon];
+            mymap = L.map('mapid').setView(center, 11);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(mymap);
+
+            storeData.forEach(store => {
+                const marker = L.marker([store.lat, store.lon]).addTo(mymap);
+                const popupHtml = `<b>${store.name}</b><br>${store.address || ''}<br>Omzet: Rp ${store.omzet.toLocaleString()}`;
+                marker.bindPopup(popupHtml);
+
+                L.circle([store.lat, store.lon], {
+                    color: '#E84158',
+                    fillColor: '#E84158',
+                    fillOpacity: 0.12,
+                    radius: store.radius
+                }).addTo(mymap);
+            });
+
+            // if the container was hidden when map was created, ensure proper sizing
+            setTimeout(() => { try { mymap.invalidateSize(); } catch (e) {} }, 200);
+        }
+
+        function showMap(storeId) {
+            const store = storeData.find(s => s.id === storeId);
+            if (!store) return;
+
+            // show store section and mark link active
+            showContent('store');
+            setActiveLink(document.querySelector('.nav-link[data-target="store"]'));
+
+            // ensure map exists then set view to store
+            setTimeout(() => {
+                if (!mymap) initializeMap();
+                try { mymap.setView([store.lat, store.lon], 13); } catch (e) {}
+            }, 200);
+
+            // close sidebar on mobile
+            if (window.innerWidth < 768) toggleSidebar(false);
+        }
+
+        /* ---------- Content switching & sidebar helpers ---------- */
+        function showContent(targetId) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.add('hidden'));
+            const el = document.getElementById('content-' + targetId);
+            if (el) el.classList.remove('hidden');
+
+            if (targetId === 'dashboard') initializeChart();
+            if (targetId === 'store') setTimeout(initializeMap, 120);
+        }
+
+        function setActiveLink(clickedLink) {
+            document.querySelectorAll('.nav-link[data-target]').forEach(link => link.classList.remove('active'));
+            if (clickedLink) clickedLink.classList.add('active');
+        }
+
+        function toggleSidebar(shouldOpen) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (!sidebar || !overlay) return;
+
+            const isOpen = (typeof shouldOpen === 'boolean') ? shouldOpen : !sidebar.classList.contains('open');
+            if (isOpen) {
+                sidebar.classList.add('open');
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+                overlay.classList.add('opacity-50');
+                // accessibility
+                document.getElementById('sidebar-toggle')?.setAttribute('aria-expanded', 'true');
+            } else {
+                sidebar.classList.remove('open');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                overlay.classList.remove('opacity-50');
+                document.getElementById('sidebar-toggle')?.setAttribute('aria-expanded', 'false');
+            }
+        }
+
+        /* ---------- Modal helpers ---------- */
+        function showModal(id) { document.getElementById(id)?.classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id)?.classList.add('hidden'); }
+
+        /* ---------- DOM ready: wire events once ---------- */
+        document.addEventListener('DOMContentLoaded', () => {
+            // sidebar toggle
+            document.getElementById('sidebar-toggle')?.addEventListener('click', () => toggleSidebar());
+            document.getElementById('sidebar-overlay')?.addEventListener('click', () => toggleSidebar(false));
+
+            // nav links
+            document.querySelectorAll('.nav-link[data-target]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const target = link.getAttribute('data-target');
+                    setActiveLink(link);
+                    showContent(target);
+                    if (window.innerWidth < 768) toggleSidebar(false);
+                });
+            });
+
+            // default show dashboard (will initialize chart)
+            showContent('dashboard');
+
+            // add member form (demo behavior)
+            const addForm = document.getElementById('addMemberForm');
+            if (addForm) {
+                addForm.addEventListener('submit', function (ev) {
+                    ev.preventDefault();
+                    const name = document.getElementById('member_name')?.value || '(nama kosong)';
+                    alert('Simulasi: Member "' + name + '" berhasil ditambahkan.');
+                    closeModal('addMemberModal');
+                    addForm.reset();
+                });
+            }
+
+            // responsive: resize chart/map on window resize end
+            let resizeTimeout = null;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    if (window.mySalesChart) window.mySalesChart.resize();
+                    if (mymap) try { mymap.invalidateSize(); } catch (e) {}
+                }, 200);
+            });
+        });
+    </script>
+</body>
+</html>
