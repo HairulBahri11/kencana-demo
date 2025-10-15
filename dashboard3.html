@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -13,24 +14,53 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
     <style>
-        :root{
+        :root {
             --kencana-blue: #E84158;
             --accent: #2E3A67;
             --muted: #6b7280;
         }
 
-        body { background-color: #f8fafc; }
+        body {
+            background-color: #f8fafc;
+        }
 
         /* Sidebar */
-        .sidebar-bg { background-color: var(--accent); }
-        .nav-link { transition: all .18s ease-in-out; display: block; }
-        .nav-link:hover { background-color: #3f507b; border-left: 4px solid var(--kencana-blue); }
-        .nav-link.active { background-color: #3f507b; border-left: 4px solid var(--kencana-blue); font-weight:600; }
-        .btn-kencana { background-color: var(--kencana-blue); transition: background-color .25s; }
-        .btn-kencana:hover { background-color: #c4384b; }
+        .sidebar-bg {
+            background-color: var(--accent);
+        }
+
+        .nav-link {
+            transition: all .18s ease-in-out;
+            display: block;
+        }
+
+        .nav-link:hover {
+            background-color: #3f507b;
+            border-left: 4px solid var(--kencana-blue);
+        }
+
+        .nav-link.active {
+            background-color: #3f507b;
+            border-left: 4px solid var(--kencana-blue);
+            font-weight: 600;
+        }
+
+        .btn-kencana {
+            background-color: var(--kencana-blue);
+            transition: background-color .25s;
+        }
+
+        .btn-kencana:hover {
+            background-color: #c4384b;
+        }
 
         /* map */
-        #mapid { height: 420px; width: 100%; border-radius: 8px; margin-top: 8px; }
+        #mapid {
+            height: 420px;
+            width: 100%;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
 
         /* Mobile sidebar handling */
         #sidebar {
@@ -42,76 +72,120 @@
             transition: transform .28s ease-in-out;
             height: 100vh;
             overflow-y: auto;
-            width: 18rem; /* Use the same width as desktop for consistency: 18rem = 288px */
+            width: 18rem;
+            /* Use the same width as desktop for consistency: 18rem = 288px */
         }
-        #sidebar.open { transform: translateX(0); }
+
+        #sidebar.open {
+            transform: translateX(0);
+        }
 
         /* overlay */
-        #sidebar-overlay { transition: opacity .28s ease-in-out; }
+        #sidebar-overlay {
+            transition: opacity .28s ease-in-out;
+        }
 
         /* Desktop: show sidebar */
-        @media (min-width:768px){
+        @media (min-width:768px) {
             #sidebar {
                 transform: translateX(0) !important;
-                position: sticky; /* JANGAN STATIC, agar tetap di tempat saat konten panjang */
-                height: 100vh; /* Sesuaikan tinggi */
+                position: sticky;
+                /* JANGAN STATIC, agar tetap di tempat saat konten panjang */
+                height: 100vh;
+                /* Sesuaikan tinggi */
                 overflow-y: auto;
-                width: 18rem; /* Tetapkan lebar untuk desktop: 18rem (288px) */
+                width: 18rem;
+                /* Tetapkan lebar untuk desktop: 18rem (288px) */
             }
-            #sidebar-overlay { display: none !important; }
+
+            #sidebar-overlay {
+                display: none !important;
+            }
 
             /* Penyesuaian Main Content: Hapus margin-left yang tidak perlu */
-            main { margin-left: 0 !important; } 
+            main {
+                margin-left: 0 !important;
+            }
         }
 
         /* tables responsive */
-        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
 
         /* theme helpers used in markup */
-        .border-kencana { border-color: var(--kencana-blue); }
-        .text-kencana { color: var(--kencana-blue); }
+        .border-kencana {
+            border-color: var(--kencana-blue);
+        }
+
+        .text-kencana {
+            color: var(--kencana-blue);
+        }
 
         /* input focus visual (uses theme color) */
-        input:focus, textarea:focus, select:focus { outline: none; box-shadow: 0 0 0 4px rgba(232,65,88,0.08); border-color: var(--kencana-blue); }
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(232, 65, 88, 0.08);
+            border-color: var(--kencana-blue);
+        }
     </style>
 </head>
+
 <body class="font-sans text-gray-800 md:flex">
 
-    <aside id="sidebar" class="sidebar-bg text-white shadow-2xl md:w-72"> 
+    <aside id="sidebar" class="sidebar-bg text-white shadow-2xl md:w-72">
         <div class="p-6">
             <h2 class="text-2xl md:text-3xl font-bold mb-6 text-center tracking-wider">CMS PANEL</h2>
         </div>
         <nav class="space-y-2 px-2" id="sidebar-menu">
-            <a href="#dashboard" class="nav-link px-4 py-3 rounded-md active" data-target="dashboard"><span class="mr-3">🏠</span> Dashboard Utama</a>
-            <a href="#member" class="nav-link px-4 py-3 rounded-md" data-target="member"><span class="mr-3">👤</span> Manajemen Member</a>
-            <a href="#produk" class="nav-link px-4 py-3 rounded-md" data-target="produk"><span class="mr-3">📦</span> Manajemen Produk</a>
-            <a href="#store" class="nav-link px-4 py-3 rounded-md" data-target="store"><span class="mr-3">🏢</span> Manajemen Store</a>
-            <a href="#settings" class="nav-link px-4 py-3 rounded-md" data-target="settings"><span class="mr-3">⚙️</span> Pengaturan</a>
-            <a href="#" class="nav-link px-4 py-3 rounded-md text-red-300 hover:!bg-red-800"><span class="mr-3">🚪</span> Logout</a>
+            <a href="#dashboard" class="nav-link px-4 py-3 rounded-md active" data-target="dashboard"><span
+                    class="mr-3">🏠</span> Dashboard Utama</a>
+            <a href="#member" class="nav-link px-4 py-3 rounded-md" data-target="member"><span class="mr-3">👤</span>
+                Manajemen Member</a>
+            <a href="#produk" class="nav-link px-4 py-3 rounded-md" data-target="produk"><span class="mr-3">📦</span>
+                Manajemen Produk</a>
+            <a href="#store" class="nav-link px-4 py-3 rounded-md" data-target="store"><span class="mr-3">🏢</span>
+                Manajemen Store</a>
+            <a href="#settings" class="nav-link px-4 py-3 rounded-md" data-target="settings"><span
+                    class="mr-3">⚙️</span> Pengaturan</a>
+            <a href="#" class="nav-link px-4 py-3 rounded-md text-red-300 hover:!bg-red-800"><span
+                    class="mr-3">🚪</span> Logout</a>
         </nav>
     </aside>
 
     <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-0 pointer-events-none z-30 md:hidden"></div>
 
-    <main class="flex-1 min-h-screen"> 
-        <header class="bg-white p-4 md:p-6 rounded-b-lg shadow mb-6 flex items-center justify-between sticky top-0 z-20">
+    <main class="flex-1 min-h-screen">
+        <header
+            class="bg-white p-4 md:p-6 rounded-b-lg shadow mb-6 flex items-center justify-between sticky top-0 z-20">
             <div class="flex items-center gap-3">
-                <button id="sidebar-toggle" class="md:hidden p-2 rounded hover:bg-gray-100 text-gray-600" aria-label="Buka sidebar">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <button id="sidebar-toggle" class="md:hidden p-2 rounded hover:bg-gray-100 text-gray-600"
+                    aria-label="Buka sidebar">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
                 </button>
                 <h1 class="text-lg md:text-2xl font-bold truncate">Panel Administrasi</h1>
             </div>
             <div class="flex items-center gap-4">
                 <span class="text-xs md:text-sm text-gray-500 hidden sm:inline">Admin Kencana | 15 Okt 2025</span>
                 <button class="p-2 rounded hover:bg-gray-100 text-gray-600" title="Notifikasi">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
                 </button>
             </div>
         </header>
 
         <div class="px-4 md:px-8 pb-12">
             <section id="content-dashboard" class="content-section">
-                <h2 class="text-xl md:text-2xl font-bold mb-6 text-kencana" style="color:var(--kencana-blue)">Overview Dashboard</h2>
+                <h2 class="text-xl md:text-2xl font-bold mb-6 text-kencana" style="color:var(--kencana-blue)">Overview
+                    Dashboard</h2>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
                     <div class="bg-white p-5 rounded-xl shadow-lg border-l-4 border-kencana">
@@ -145,10 +219,13 @@
             </section>
 
             <section id="content-member" class="content-section hidden">
-                <h3 class="text-xl md:text-2xl font-bold mb-6" style="color:var(--kencana-blue)">👤 Manajemen Member</h3>
+                <h3 class="text-xl md:text-2xl font-bold mb-6" style="color:var(--kencana-blue)">👤 Manajemen Member
+                </h3>
                 <div class="bg-white p-4 md:p-6 rounded-lg shadow-md mb-8 border-l-4 border-kencana">
                     <p class="text-gray-600 mb-4">Kelola profil, poin, *redeem*, dan riwayat transaksi member.</p>
-                    <button class="btn-kencana text-white py-2 px-4 rounded-lg font-medium mb-4 shadow-md hover:shadow-lg text-sm" onclick="showModal('addMemberModal')">
+                    <button
+                        class="btn-kencana text-white py-2 px-4 rounded-lg font-medium mb-4 shadow-md hover:shadow-lg text-sm"
+                        onclick="showModal('addMemberModal')">
                         ➕ Tambah Member Baru
                     </button>
 
@@ -156,12 +233,18 @@
                         <table class="min-w-full divide-y divide-gray-200 bg-white">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID Member</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Member</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Poin Saat Ini</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Transaksi</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID
+                                        Member</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama
+                                        Member</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email
+                                    </th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Poin
+                                        Saat Ini</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total
+                                        Transaksi</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -172,8 +255,12 @@
                                     <td class="px-4 py-3 text-sm font-semibold text-green-600">1.250</td>
                                     <td class="px-4 py-3 text-sm">Rp 12.450.000</td>
                                     <td class="px-4 py-3 text-sm">
-                                        <button class="text-indigo-600 hover:text-indigo-900 mr-2 p-1 rounded-md bg-indigo-100 text-xs">Lihat Profil/Poin</button>
-                                        <button class="text-red-600 hover:text-red-900 p-1 rounded-md bg-red-100 text-xs">Riwayat Transaksi</button>
+                                        <button
+                                            class="text-indigo-600 hover:text-indigo-900 mr-2 p-1 rounded-md bg-indigo-100 text-xs">Lihat
+                                            Profil/Poin</button>
+                                        <button
+                                            class="text-red-600 hover:text-red-900 p-1 rounded-md bg-red-100 text-xs">Riwayat
+                                            Transaksi</button>
                                     </td>
                                 </tr>
                                 <tr>
@@ -183,8 +270,12 @@
                                     <td class="px-4 py-3 text-sm font-semibold text-green-600">450</td>
                                     <td class="px-4 py-3 text-sm">Rp 3.200.000</td>
                                     <td class="px-4 py-3 text-sm">
-                                        <button class="text-indigo-600 hover:text-indigo-900 mr-2 p-1 rounded-md bg-indigo-100 text-xs">Lihat Profil/Poin</button>
-                                        <button class="text-red-600 hover:text-red-900 p-1 rounded-md bg-red-100 text-xs">Riwayat Transaksi</button>
+                                        <button
+                                            class="text-indigo-600 hover:text-indigo-900 mr-2 p-1 rounded-md bg-indigo-100 text-xs">Lihat
+                                            Profil/Poin</button>
+                                        <button
+                                            class="text-red-600 hover:text-red-900 p-1 rounded-md bg-red-100 text-xs">Riwayat
+                                            Transaksi</button>
                                     </td>
                                 </tr>
                                 <tr>
@@ -194,8 +285,12 @@
                                     <td class="px-4 py-3 text-sm font-semibold text-green-600">320</td>
                                     <td class="px-4 py-3 text-sm">Rp 1.780.000</td>
                                     <td class="px-4 py-3 text-sm">
-                                        <button class="text-indigo-600 hover:text-indigo-900 mr-2 p-1 rounded-md bg-indigo-100 text-xs">Lihat Profil/Poin</button>
-                                        <button class="text-red-600 hover:text-red-900 p-1 rounded-md bg-red-100 text-xs">Riwayat Transaksi</button>
+                                        <button
+                                            class="text-indigo-600 hover:text-indigo-900 mr-2 p-1 rounded-md bg-indigo-100 text-xs">Lihat
+                                            Profil/Poin</button>
+                                        <button
+                                            class="text-red-600 hover:text-red-900 p-1 rounded-md bg-red-100 text-xs">Riwayat
+                                            Transaksi</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -205,20 +300,29 @@
             </section>
 
             <section id="content-produk" class="content-section hidden">
-                <h3 class="text-xl md:text-2xl font-bold mb-6" style="color:var(--kencana-blue)">📦 Manajemen Produk</h3>
+                <h3 class="text-xl md:text-2xl font-bold mb-6" style="color:var(--kencana-blue)">📦 Manajemen Produk
+                </h3>
                 <div class="bg-white p-4 md:p-6 rounded-lg shadow-md mb-8 border-l-4 border-kencana">
-                    <p class="text-gray-600 mb-4">CRUD produk & promo, pengaturan banner, periode promo, dan stok per cabang.</p>
-                    <button class="btn-kencana text-white py-2 px-4 rounded-lg font-medium mb-4 shadow-md hover:shadow-lg text-sm">➕ Tambah Produk/Promo Baru</button>
+                    <p class="text-gray-600 mb-4">CRUD produk & promo, pengaturan banner, periode promo, dan stok per
+                        cabang.</p>
+                    <button
+                        class="btn-kencana text-white py-2 px-4 rounded-lg font-medium mb-4 shadow-md hover:shadow-lg text-sm">➕
+                        Tambah Produk/Promo Baru</button>
 
                     <div class="table-responsive">
                         <table class="min-w-full divide-y divide-gray-200 bg-white">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Produk</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga (IDR)</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status Promo</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stok Pusat</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama
+                                        Produk</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga
+                                        (IDR)</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status
+                                        Promo</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stok
+                                        Pusat</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -228,7 +332,8 @@
                                     <td class="px-4 py-4 text-gray-600">Tidak</td>
                                     <td class="px-4 py-4 font-medium text-indigo-600">340 zak</td>
                                     <td class="px-4 py-4 text-sm">
-                                        <button class="text-yellow-600 mr-2 p-1 rounded-md bg-yellow-100 text-xs">Edit</button>
+                                        <button
+                                            class="text-yellow-600 mr-2 p-1 rounded-md bg-yellow-100 text-xs">Edit</button>
                                         <button class="text-red-600 p-1 rounded-md bg-red-100 text-xs">Hapus</button>
                                     </td>
                                 </tr>
@@ -238,7 +343,8 @@
                                     <td class="px-4 py-4 font-bold text-kencana">Promo (hingga 31 Okt)</td>
                                     <td class="px-4 py-4 font-medium text-indigo-600">120 kaleng</td>
                                     <td class="px-4 py-4 text-sm">
-                                        <button class="text-yellow-600 mr-2 p-1 rounded-md bg-yellow-100 text-xs">Edit</button>
+                                        <button
+                                            class="text-yellow-600 mr-2 p-1 rounded-md bg-yellow-100 text-xs">Edit</button>
                                         <button class="text-red-600 p-1 rounded-md bg-red-100 text-xs">Hapus</button>
                                     </td>
                                 </tr>
@@ -248,7 +354,8 @@
                                     <td class="px-4 py-4 text-gray-600">Tidak</td>
                                     <td class="px-4 py-4 font-medium text-indigo-600">520 batang</td>
                                     <td class="px-4 py-4 text-sm">
-                                        <button class="text-yellow-600 mr-2 p-1 rounded-md bg-yellow-100 text-xs">Edit</button>
+                                        <button
+                                            class="text-yellow-600 mr-2 p-1 rounded-md bg-yellow-100 text-xs">Edit</button>
                                         <button class="text-red-600 p-1 rounded-md bg-red-100 text-xs">Hapus</button>
                                     </td>
                                 </tr>
@@ -258,7 +365,8 @@
                                     <td class="px-4 py-4 text-gray-600">Tidak</td>
                                     <td class="px-4 py-4 font-medium text-indigo-600">60 box</td>
                                     <td class="px-4 py-4 text-sm">
-                                        <button class="text-yellow-600 mr-2 p-1 rounded-md bg-yellow-100 text-xs">Edit</button>
+                                        <button
+                                            class="text-yellow-600 mr-2 p-1 rounded-md bg-yellow-100 text-xs">Edit</button>
                                         <button class="text-red-600 p-1 rounded-md bg-red-100 text-xs">Hapus</button>
                                     </td>
                                 </tr>
@@ -272,18 +380,26 @@
             <section id="content-store" class="content-section hidden">
                 <h3 class="text-xl md:text-2xl font-bold mb-6" style="color:var(--kencana-blue)">🏢 Manajemen Store</h3>
                 <div class="bg-white p-4 md:p-6 rounded-lg shadow-md mb-8 border-l-4 border-kencana">
-                    <p class="text-gray-600 mb-4">Kelola daftar cabang, koordinat geografis, radius layanan, dan rute.</p>
-                    <button class="btn-kencana text-white py-2 px-4 rounded-lg font-medium mb-4 shadow-md hover:shadow-lg text-sm">➕ Tambah Cabang Baru</button>
+                    <p class="text-gray-600 mb-4">Kelola daftar cabang, koordinat geografis, radius layanan, dan rute.
+                    </p>
+                    <button
+                        class="btn-kencana text-white py-2 px-4 rounded-lg font-medium mb-4 shadow-md hover:shadow-lg text-sm">➕
+                        Tambah Cabang Baru</button>
 
                     <div class="table-responsive">
                         <table class="min-w-full divide-y divide-gray-200 bg-white">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Cabang</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kota</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Radius Layanan</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama
+                                        Cabang</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kota
+                                    </th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Radius
+                                        Layanan</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status
+                                    </th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -291,9 +407,12 @@
                                     <td class="px-4 py-4 font-medium text-gray-900">Store Utama Denpasar</td>
                                     <td class="px-4 py-4">Denpasar</td>
                                     <td class="px-4 py-4 font-semibold text-blue-600">5 km</td>
-                                    <td class="px-4 py-4"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span></td>
+                                    <td class="px-4 py-4"><span
+                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>
+                                    </td>
                                     <td class="px-4 py-4 text-sm">
-                                        <button class="text-indigo-600 mr-2 p-1 rounded-md bg-indigo-100 text-xs" onclick="showMap(1)">Lihat di Peta</button>
+                                        <button class="text-indigo-600 mr-2 p-1 rounded-md bg-indigo-100 text-xs"
+                                            onclick="showMap(1)">Lihat di Peta</button>
                                         <button class="text-green-600 p-1 rounded-md bg-green-100 text-xs">Rute</button>
                                     </td>
                                 </tr>
@@ -301,9 +420,12 @@
                                     <td class="px-4 py-4 font-medium text-gray-900">Store Jimbaran</td>
                                     <td class="px-4 py-4">Jimbaran</td>
                                     <td class="px-4 py-4 font-semibold text-blue-600">7 km</td>
-                                    <td class="px-4 py-4"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span></td>
+                                    <td class="px-4 py-4"><span
+                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>
+                                    </td>
                                     <td class="px-4 py-4 text-sm">
-                                        <button class="text-indigo-600 mr-2 p-1 rounded-md bg-indigo-100 text-xs" onclick="showMap(2)">Lihat di Peta</button>
+                                        <button class="text-indigo-600 mr-2 p-1 rounded-md bg-indigo-100 text-xs"
+                                            onclick="showMap(2)">Lihat di Peta</button>
                                         <button class="text-green-600 p-1 rounded-md bg-green-100 text-xs">Rute</button>
                                     </td>
                                 </tr>
@@ -311,9 +433,12 @@
                                     <td class="px-4 py-4 font-medium text-gray-900">Store Mengwi</td>
                                     <td class="px-4 py-4">Mengwi</td>
                                     <td class="px-4 py-4 font-semibold text-blue-600">6 km</td>
-                                    <td class="px-4 py-4"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Buka Terbatas</span></td>
+                                    <td class="px-4 py-4"><span
+                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Buka
+                                            Terbatas</span></td>
                                     <td class="px-4 py-4 text-sm">
-                                        <button class="text-indigo-600 mr-2 p-1 rounded-md bg-indigo-100 text-xs" onclick="showMap(3)">Lihat di Peta</button>
+                                        <button class="text-indigo-600 mr-2 p-1 rounded-md bg-indigo-100 text-xs"
+                                            onclick="showMap(3)">Lihat di Peta</button>
                                         <button class="text-green-600 p-1 rounded-md bg-green-100 text-xs">Rute</button>
                                     </td>
                                 </tr>
@@ -321,13 +446,16 @@
                                     <td class="px-4 py-4 font-medium text-gray-900">Store Situbondo</td>
                                     <td class="px-4 py-4">Situbondo</td>
                                     <td class="px-4 py-4 font-semibold text-blue-600">6 km</td>
-                                    <td class="px-4 py-4"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Buka Terbatas</span></td>
+                                    <td class="px-4 py-4"><span
+                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Buka
+                                            Terbatas</span></td>
                                     <td class="px-4 py-4 text-sm">
-                                        <button class="text-indigo-600 mr-2 p-1 rounded-md bg-indigo-100 text-xs" onclick="showMap(4)">Lihat di Peta</button>
+                                        <button class="text-indigo-600 mr-2 p-1 rounded-md bg-indigo-100 text-xs"
+                                            onclick="showMap(4)">Lihat di Peta</button>
                                         <button class="text-green-600 p-1 rounded-md bg-green-100 text-xs">Rute</button>
                                     </td>
                                 </tr>
-                               
+
                             </tbody>
                         </table>
                     </div>
@@ -342,26 +470,44 @@
 
             <!-- PENGATURAN / SETTINGS SECTION (NEW) -->
             <section id="content-settings" class="content-section hidden">
-                <h3 class="text-xl md:text-2xl font-bold mb-6" style="color:var(--kencana-blue)">⚙️ Pengaturan Sistem & Admin</h3>
-                
+                <h3 class="text-xl md:text-2xl font-bold mb-6" style="color:var(--kencana-blue)">⚙️ Pengaturan Sistem &
+                    Admin</h3>
+
+                <!-- NEW: Add User Button -->
+                <div class="flex justify-end mb-6">
+                    <button onclick="showModal('addUserModal')"
+                        class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg font-medium shadow-md hover:shadow-lg transition flex items-center">
+                        <i data-lucide="user-plus" class="w-5 h-5 mr-1"></i> Tambah User
+                    </button>
+                </div>
+
+
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                     <!-- Card 1: Pengaturan Superadmin -->
                     <div class="bg-white p-5 rounded-xl shadow-lg border-l-4 border-red-500">
                         <h4 class="text-lg font-bold mb-4 text-red-700">Pengaturan Superadmin</h4>
-                        <p class="text-sm text-gray-500 mb-4">Pengaturan kritis sistem, hanya diakses oleh level admin tertinggi.</p>
+                        <p class="text-sm text-gray-500 mb-4">Pengaturan kritis sistem, hanya diakses oleh level admin
+                            tertinggi.</p>
                         <form class="space-y-3">
                             <div>
                                 <label class="flex items-center space-x-2">
-                                    <input type="checkbox" id="maintenance_mode" class="rounded text-red-500 focus:ring-red-500">
-                                    <span class="text-sm font-medium text-gray-700">Aktifkan Mode Perawatan (Maintenance Mode)</span>
+                                    <input type="checkbox" id="maintenance_mode"
+                                        class="rounded text-red-500 focus:ring-red-500">
+                                    <span class="text-sm font-medium text-gray-700">Aktifkan Mode Perawatan (Maintenance
+                                        Mode)</span>
                                 </label>
-                                <p class="text-xs text-red-400 mt-1">Sistem akan offline untuk publik. Gunakan dengan hati-hati.</p>
+                                <p class="text-xs text-red-400 mt-1">Sistem akan offline untuk publik. Gunakan dengan
+                                    hati-hati.</p>
                             </div>
                             <div>
-                                <label for="max_admin_limit" class="block text-sm font-medium text-gray-700">Batas Maksimum Akun Admin</label>
-                                <input id="max_admin_limit" type="number" value="10" min="1" class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm">
+                                <label for="max_admin_limit" class="block text-sm font-medium text-gray-700">Batas
+                                    Maksimum Akun Admin</label>
+                                <input id="max_admin_limit" type="number" value="10" min="1"
+                                    class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm">
                             </div>
-                            <button type="submit" class="btn-kencana text-white py-2 px-4 rounded-lg font-medium text-sm w-full">Simpan Perubahan Kritis</button>
+                            <button type="submit"
+                                class="btn-kencana text-white py-2 px-4 rounded-lg font-medium text-sm w-full">Simpan
+                                Perubahan Kritis</button>
                         </form>
                     </div>
 
@@ -371,18 +517,24 @@
                         <p class="text-sm text-gray-500 mb-4">Konfigurasi diskon, notifikasi promo, dan segmentasi.</p>
                         <form class="space-y-3">
                             <div>
-                                <label for="default_discount_percent" class="block text-sm font-medium text-gray-700">Default Diskon (%)</label>
-                                <input id="default_discount_percent" type="number" value="5" min="0" max="100" class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm">
+                                <label for="default_discount_percent"
+                                    class="block text-sm font-medium text-gray-700">Default Diskon (%)</label>
+                                <input id="default_discount_percent" type="number" value="5" min="0" max="100"
+                                    class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm">
                             </div>
                             <div>
-                                <label for="push_notification_status" class="block text-sm font-medium text-gray-700">Status Notifikasi Promo</label>
-                                <select id="push_notification_status" class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm">
+                                <label for="push_notification_status"
+                                    class="block text-sm font-medium text-gray-700">Status Notifikasi Promo</label>
+                                <select id="push_notification_status"
+                                    class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm">
                                     <option>Aktif Penuh</option>
                                     <option>Aktif Terbatas (Hanya Weekend)</option>
                                     <option>Nonaktif</option>
                                 </select>
                             </div>
-                            <button type="submit" class="bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg font-medium text-sm w-full transition">Update Marketing Config</button>
+                            <button type="submit"
+                                class="bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg font-medium text-sm w-full transition">Update
+                                Marketing Config</button>
                         </form>
                     </div>
 
@@ -392,36 +544,47 @@
                         <p class="text-sm text-gray-500 mb-4">Pengaturan widget chat dan aturan penugasan tiket.</p>
                         <form class="space-y-3">
                             <div>
-                                <label for="default_cs_agent" class="block text-sm font-medium text-gray-700">Agen CS Default</label>
-                                <select id="default_cs_agent" class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm">
+                                <label for="default_cs_agent" class="block text-sm font-medium text-gray-700">Agen CS
+                                    Default</label>
+                                <select id="default_cs_agent"
+                                    class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm">
                                     <option>Beni (General)</option>
                                     <option>Sinta (Teknis)</option>
                                     <option>Otomatis (Round Robin)</option>
                                 </select>
                             </div>
                             <div>
-                                <label for="chat_widget_status" class="block text-sm font-medium text-gray-700">Tampilkan Widget Chat Online?</label>
-                                <select id="chat_widget_status" class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm">
+                                <label for="chat_widget_status"
+                                    class="block text-sm font-medium text-gray-700">Tampilkan Widget Chat
+                                    Online?</label>
+                                <select id="chat_widget_status"
+                                    class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm">
                                     <option>Ya, di semua halaman</option>
                                     <option>Tidak, sembunyikan</option>
                                 </select>
                             </div>
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg font-medium text-sm w-full transition">Update CS Config</button>
+                            <button type="submit"
+                                class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg font-medium text-sm w-full transition">Update
+                                CS Config</button>
                         </form>
                     </div>
-                    
+
                     <!-- Card 4: Log Aktivitas Admin -->
                     <div class="bg-white p-5 rounded-xl shadow-lg border-l-4 border-yellow-500">
                         <h4 class="text-lg font-bold mb-4 text-yellow-700">Log Aktivitas Admin</h4>
-                        <p class="text-sm text-gray-500 mb-4">Lihat riwayat tindakan yang dilakukan oleh semua pengguna admin.</p>
-                        
+                        <p class="text-sm text-gray-500 mb-4">Lihat riwayat tindakan yang dilakukan oleh semua pengguna
+                            admin.</p>
+
                         <div class="table-responsive">
                             <table class="min-w-full divide-y divide-gray-200 text-sm">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Admin</th>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Waktu</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Admin</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Aksi
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
@@ -443,7 +606,84 @@
                                 </tbody>
                             </table>
                         </div>
-                        <button class="bg-gray-100 text-gray-700 py-1 px-3 rounded-lg font-medium text-xs mt-4 w-full border border-gray-300 hover:bg-gray-200 transition">Lihat Semua Log</button>
+                        <button
+                            class="bg-gray-100 text-gray-700 py-1 px-3 rounded-lg font-medium text-xs mt-4 w-full border border-gray-300 hover:bg-gray-200 transition">Lihat
+                            Semua Log</button>
+                    </div>
+
+                            <!-- NEW: Daftar User Admin (Full Width Section) -->
+            <div class="bg-white p-5 rounded-xl shadow-lg border-t-4 border-indigo-500 mt-8">
+                <h4 class="text-lg font-bold mb-4 text-indigo-700">Daftar User</h4>
+                <p class="text-sm text-gray-500 mb-4">Kelola semua akun pengguna yang memiliki akses ke dashboard ini.</p>
+                
+                <div class="overflow-x-auto">
+                    <table id="adminUserTable" class="min-w-full divide-y divide-gray-200 text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nama User</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminUserTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Data users akan di-inject di sini oleh JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 text-sm text-gray-500">
+                    <button class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Export ke Excel</button>
+                </div>
+            </div>
+            
+
+                    <!-- Modal: Tambah User Admin -->
+                    <div id="addUserModal"
+                        class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4"
+                        onclick="closeModal('addUserModal')">
+                        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md"
+                            onclick="event.stopPropagation()">
+                            <h3 class="text-xl font-bold mb-4 text-gray-800">Form Tambah User Admin</h3>
+                            <form id="addUserForm" class="space-y-4">
+                                <div>
+                                    <label for="user_full_name" class="block text-sm font-medium text-gray-700">Nama
+                                        Lengkap User</label>
+                                    <input type="text" id="user_full_name" required
+                                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm focus:border-red-500 focus:ring-red-500">
+                                </div>
+                                <div>
+                                    <label for="user_email" class="block text-sm font-medium text-gray-700">Email
+                                        User</label>
+                                    <input type="email" id="user_email" required
+                                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm focus:border-red-500 focus:ring-red-500">
+                                </div>
+                                <div>
+                                    <label for="user_password" class="block text-sm font-medium text-gray-700">Password
+                                        (Simulasi)</label>
+                                    <input type="password" id="user_password" value="initial123" required
+                                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm focus:border-red-500 focus:ring-red-500">
+                                </div>
+                                <div>
+                                    <label for="user_role" class="block text-sm font-medium text-gray-700">Role
+                                        User</label>
+                                    <select id="user_role" required
+                                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm focus:border-red-500 focus:ring-red-500">
+                                        <option value="Super Admin">Super Admin</option>
+                                        <option value="Admin">Admin (Full Control)</option>
+                                        <option value="CS">Customer Service (CS)</option>
+                                        <option value="Marketing">Marketing (Promo/Diskon)</option>
+                                    </select>
+                                </div>
+                                <div class="flex justify-end space-x-3 pt-2">
+                                    <button type="button" onclick="closeModal('addUserModal')"
+                                        class="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium text-sm hover:bg-gray-300">Batal</button>
+                                    <button type="submit"
+                                        class="bg-red-500 text-white py-2 px-4 rounded-lg font-medium text-sm hover:bg-red-600">Daftarkan
+                                        User</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -451,36 +691,90 @@
         </div>
     </main>
 
-    <div id="addMemberModal" class="fixed inset-0 bg-gray-600 bg-opacity-70 flex items-center justify-center z-50 hidden">
+    <div id="addMemberModal"
+        class="fixed inset-0 bg-gray-600 bg-opacity-70 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-lg m-4 p-6">
             <div class="flex justify-between items-start border-b pb-3">
                 <h3 class="text-xl font-semibold">Tambah Member Baru</h3>
                 <button class="text-gray-400 hover:text-gray-900" onclick="closeModal('addMemberModal')">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </button>
             </div>
 
             <form id="addMemberForm" class="mt-4 space-y-4">
                 <div>
                     <label for="member_name" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-                    <input id="member_name" name="member_name" type="text" required class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[--kencana-blue]" placeholder="Masukkan nama member">
+                    <input id="member_name" name="member_name" type="text" required
+                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[--kencana-blue]"
+                        placeholder="Masukkan nama member">
                 </div>
                 <div>
                     <label for="member_email" class="block text-sm font-medium text-gray-700">Email</label>
-                    <input id="member_email" name="member_email" type="email" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="example@domain.com">
+                    <input id="member_email" name="member_email" type="email"
+                        class="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                        placeholder="example@domain.com">
                 </div>
                 <div>
                     <label for="member_phone" class="block text-sm font-medium text-gray-700">Nomor Telepon</label>
-                    <input id="member_phone" name="member_phone" type="tel" required class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Cth: 08123456789">
+                    <input id="member_phone" name="member_phone" type="tel" required
+                        class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Cth: 08123456789">
                 </div>
                 <div>
-                    <label for="initial_points" class="block text-sm font-medium text-gray-700">Poin Awal (Opsional)</label>
-                    <input id="initial_points" name="initial_points" type="number" value="0" min="0" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                    <label for="initial_points" class="block text-sm font-medium text-gray-700">Poin Awal
+                        (Opsional)</label>
+                    <input id="initial_points" name="initial_points" type="number" value="0" min="0"
+                        class="mt-1 block w-full border border-gray-300 rounded-md p-2">
                 </div>
 
                 <div class="flex justify-end gap-3 pt-2">
-                    <button type="button" class="bg-gray-200 text-gray-700 py-2 px-4 rounded" onclick="closeModal('addMemberModal')">Batal</button>
+                    <button type="button" class="bg-gray-200 text-gray-700 py-2 px-4 rounded"
+                        onclick="closeModal('addMemberModal')">Batal</button>
                     <button type="submit" class="btn-kencana text-white py-2 px-4 rounded">Simpan Member</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW Modal: Tambah User Admin -->
+    <div id="addUserModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4"
+        onclick="closeModal('addUserModal')">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md" onclick="event.stopPropagation()">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">Form Tambah User Admin</h3>
+            <form id="addUserForm" class="space-y-4">
+                <div>
+                    <label for="user_full_name" class="block text-sm font-medium text-gray-700">Nama Lengkap
+                        User</label>
+                    <input type="text" id="user_full_name" required
+                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm focus:border-red-500 focus:ring-red-500">
+                </div>
+                <div>
+                    <label for="user_email" class="block text-sm font-medium text-gray-700">Email User</label>
+                    <input type="email" id="user_email" required
+                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm focus:border-red-500 focus:ring-red-500">
+                </div>
+                <div>
+                    <label for="user_password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="user_password" value="initial123" required
+                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm focus:border-red-500 focus:ring-red-500">
+                </div>
+                <div>
+                    <label for="user_role" class="block text-sm font-medium text-gray-700">Role User</label>
+                    <select id="user_role" required
+                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm focus:border-red-500 focus:ring-red-500">
+                        <option value="Admin">Admin (Full Control)</option>
+                        <option value="CS">Customer Service (CS)</option>
+                        <option value="Marketing">Marketing (Promo/Diskon)</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeModal('addUserModal')"
+                        class="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium text-sm hover:bg-gray-300">Batal</button>
+                    <button type="submit"
+                        class="bg-red-500 text-white py-2 px-4 rounded-lg font-medium text-sm hover:bg-red-600">Daftarkan
+                        User</button>
                 </div>
             </form>
         </div>
@@ -495,6 +789,20 @@
             // store Situbondo
             { id: 4, lat: -7.7000, lon: 114.0300, radius: 8000, name: 'Store Situbondo', address: 'Jl. Raya Situbondo No.45, Situbondo', omzet: 30000000 },
             // { id: 5, lat: -8.3400, lon: 115.0900, radius: 5000, name: 'Store Gianyar', address: 'Jl. Dewi Sita No.12, Gianyar', omzet: 54000000 }
+        ];
+
+        /* Lucide Icons Initialization */
+        window.addEventListener('DOMContentLoaded', () => {
+            // lucide.createIcons();
+            renderAdminUsers(); // Panggil saat DOM siap
+        });
+
+        /* Global State for User Data (Simulasi data di frontend) */
+        let adminUsers = [
+            { id: 1, name: 'Siska', email: 'siska.super@kj.com', role: 'Super Admin', status: 'Aktif' },
+            { id: 2, name: 'Bambang', email: 'bambang@kj.com', role: 'Admin', status: 'Aktif' },
+            { id: 3, name: 'Sinta', email: 'sinta.cs@kj.com', role: 'CS', status: 'Aktif' },
+            { id: 4, name: 'Rudy', email: 'rudy.mkt@kj.com', role: 'Marketing', status: 'Nonaktif' },
         ];
 
         /* ---------- Chart Initialization ---------- */
@@ -565,7 +873,7 @@
             });
 
             // if the container was hidden when map was created, ensure proper sizing
-            setTimeout(() => { try { mymap.invalidateSize(); } catch (e) {} }, 200);
+            setTimeout(() => { try { mymap.invalidateSize(); } catch (e) { } }, 200);
         }
 
         function showMap(storeId) {
@@ -579,7 +887,7 @@
             // ensure map exists then set view to store
             setTimeout(() => {
                 if (!mymap) initializeMap();
-                try { mymap.setView([store.lat, store.lon], 13); } catch (e) {}
+                try { mymap.setView([store.lat, store.lon], 13); } catch (e) { }
             }, 200);
 
             // close sidebar on mobile
@@ -625,6 +933,67 @@
         function showModal(id) { document.getElementById(id)?.classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id)?.classList.add('hidden'); }
 
+         /* ---------- User Management Functions (NEW) ---------- */
+
+        function getRoleColor(role) {
+            switch (role) {
+                case 'Super Admin': return 'bg-red-100 text-red-800';
+                case 'Admin': return 'bg-blue-100 text-blue-800';
+                case 'CS': return 'bg-green-100 text-green-800';
+                case 'Marketing': return 'bg-purple-100 text-purple-800';
+                default: return 'bg-gray-100 text-gray-700';
+            }
+        }
+
+        function getStatusColor(status) {
+            return status === 'Aktif' ? 'text-green-600 font-medium' : 'text-gray-500 italic';
+        }
+
+        function handleDeleteUser(userId) {
+            // Ini hanya simulasi
+            if (confirm(`Apakah Anda yakin ingin menghapus user ID ${userId}?`)) {
+                 adminUsers = adminUsers.filter(user => user.id !== userId);
+                renderAdminUsers();
+                showMessage(`User ID ${userId} berhasil dihapus (Simulasi).`, 'Pengguna Dihapus');
+            }
+        }
+        
+        function renderAdminUsers() {
+            const tableBody = document.getElementById('adminUserTableBody');
+            if (!tableBody) return;
+
+            tableBody.innerHTML = ''; // Bersihkan data lama
+
+            adminUsers.forEach(user => {
+                const roleClass = getRoleColor(user.role);
+                const statusClass = getStatusColor(user.status);
+
+                const row = tableBody.insertRow();
+                row.className = 'hover:bg-gray-50 transition';
+
+                row.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap font-medium">${user.name}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-gray-500">${user.email}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${roleClass}">
+                            ${user.role}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="${statusClass}">
+                            ${user.status}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                        <button onclick="showMessage('Fungsi Edit untuk ${user.name} (Simulasi)', 'Edit User')" class="text-indigo-600 hover:text-indigo-900 mx-2">Edit</button>
+                        <button onclick="handleDeleteUser(${user.id})" class="text-red-600 hover:text-red-900 mx-2">Hapus</button>
+                    </td>
+                `;
+            });
+            // Update lucide icons for action buttons dynamically
+            // lucide.createIcons(); 
+        }
+
         /* ---------- DOM ready: wire events once ---------- */
         document.addEventListener('DOMContentLoaded', () => {
             // sidebar toggle
@@ -657,16 +1026,33 @@
                 });
             }
 
+            // NEW: Add User Admin Form (Demo behavior)
+            const addUserForm = document.getElementById('addUserForm');
+            if (addUserForm) {
+                addUserForm.addEventListener('submit', function (ev) {
+                    ev.preventDefault();
+                    const name = document.getElementById('user_full_name')?.value || 'Admin Baru';
+                    const role = document.getElementById('user_role')?.value || 'Role Kosong';
+
+                    showMessage(`User Admin baru: "${name}" dengan Role "${role}" berhasil dibuat.`, 'User Ditambahkan');
+                    closeModal('addUserModal');
+                    addUserForm.reset();
+                });
+            }
+
             // responsive: resize chart/map on window resize end
             let resizeTimeout = null;
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimeout);
                 resizeTimeout = setTimeout(() => {
                     if (window.mySalesChart) window.mySalesChart.resize();
-                    if (mymap) try { mymap.invalidateSize(); } catch (e) {}
+                    if (mymap) try { mymap.invalidateSize(); } catch (e) { }
                 }, 200);
             });
         });
+
+        
     </script>
 </body>
+
 </html>

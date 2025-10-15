@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kencana Jaya - Admin Dashboard</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Load Leaflet CSS and JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20n65A9gSLJ584zF8wR2r1Gf5L4W9+RBl5i5eH7Z5+E=" crossorigin=""></script>
+    <!-- Load Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        /* Define custom colors and font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        :root {
+            --font-inter: 'Inter', sans-serif;
+            --kencana-blue: rgb(37, 99, 235); /* blue-600 */
+            --kencana-red: rgb(232,65,88); /* rose-500 equivalent */
+        }
+        body { font-family: var(--font-inter); }
+
+        /* Sidebar Styling */
+        #sidebar {
+            width: 256px; /* md:w-64 */
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-100%);
+            z-index: 50;
+        }
+        #sidebar.open {
+            transform: translateX(0);
+        }
+        @media (min-width: 768px) {
+            #sidebar {
+                transform: translateX(0);
+            }
+            #content-area {
+                margin-left: 256px;
+            }
+        }
+
+        /* Nav Link Active State */
+        .nav-link.active {
+            background-color: rgba(37, 99, 235, 0.1);
+            color: var(--kencana-blue);
+            border-left: 4px solid var(--kencana-blue);
+            font-weight: 600;
+        }
+        .nav-link {
+            padding-left: 1.5rem; /* Equivalent of px-6 */
+        }
+
+        /* Map and Chart container height */
+        #mapid { height: 500px; border-radius: 0.75rem; }
+        #chart-container { height: 400px; }
+
+        /* Custom button style for primary actions */
+        .btn-kencana {
+            background-color: var(--kencana-blue);
+            transition: background-color 0.2s;
+        }
+        .btn-kencana:hover {
+            background-color: rgb(29, 78, 216); /* darker blue */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-0 pointer-events-none transition-opacity duration-300 md:hidden z-40" onclick="toggleSidebar(false)"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed top-0 left-0 h-full bg-white shadow-xl md:shadow-none p-4 flex flex-col transition-all duration-300 md:relative">
+        <div class="flex items-center justify-between md:justify-start mb-8 border-b pb-4">
+            <h1 class="text-2xl font-black" style="color:var(--kencana-blue);">KENCANA JAYA</h1>
+            <button id="sidebar-close-btn" class="md:hidden p-2 text-gray-500 hover:text-gray-700" onclick="toggleSidebar(false)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-grow space-y-2">
+            <a href="#" class="nav-link flex items-center py-3 text-gray-600 hover:bg-gray-50 rounded-lg transition duration-150" data-target="dashboard">
+                <i data-lucide="layout-dashboard" class="w-5 h-5 mr-3"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-link flex items-center py-3 text-gray-600 hover:bg-gray-50 rounded-lg transition duration-150" data-target="member">
+                <i data-lucide="users" class="w-5 h-5 mr-3"></i>
+                <span>Data Member</span>
+            </a>
+            <a href="#" class="nav-link flex items-center py-3 text-gray-600 hover:bg-gray-50 rounded-lg transition duration-150" data-target="store">
+                <i data-lucide="map-pin" class="w-5 h-5 mr-3"></i>
+                <span>Lokasi Store</span>
+            </a>
+            <!-- Settings Link -->
+            <a href="#" class="nav-link flex items-center py-3 text-gray-600 hover:bg-gray-50 rounded-lg transition duration-150" data-target="settings">
+                <i data-lucide="settings" class="w-5 h-5 mr-3"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+
+        <div class="mt-auto pt-4 border-t">
+            <div class="flex items-center text-sm text-gray-500">
+                <i data-lucide="user-circle" class="w-5 h-5 mr-2"></i>
+                <span>Super Admin</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main id="content-area" class="flex-grow p-4 md:p-8">
+        <!-- Header -->
+        <header class="flex items-center justify-between mb-8 bg-white p-4 md:p-6 rounded-xl shadow-md sticky top-0 z-10">
+            <button id="sidebar-toggle" class="md:hidden p-2 text-gray-600 hover:text-gray-800 rounded-full" aria-expanded="false" onclick="toggleSidebar()">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+            <h2 class="text-xl font-semibold text-gray-800">Sistem Informasi Bisnis</h2>
+            <div class="flex items-center space-x-3">
+                <i data-lucide="bell" class="w-6 h-6 text-gray-500 hover:text-gray-700 cursor-pointer"></i>
+            </div>
+        </header>
+
+        <!-- DASHBOARD SECTION -->
+        <section id="content-dashboard" class="content-section">
+            <h3 class="text-xl md:text-2xl font-bold mb-6" style="color:var(--kencana-blue)">📊 Ringkasan Dashboard</h3>
+            
+            <!-- Statistic Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Card Total Omzet -->
+                <div class="bg-white p-6 rounded-xl shadow-lg flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Total Omzet (Bulan Ini)</p>
+                        <p class="text-3xl font-bold text-gray-800 mt-1">Rp 480 Jt</p>
+                        <p class="text-xs text-green-500 mt-1">▲ 12% dari bulan lalu</p>
+                    </div>
+                    <i data-lucide="trending-up" class="w-10 h-10 text-green-400 opacity-70"></i>
+                </div>
+
+                <!-- Card Total Store -->
+                <div class="bg-white p-6 rounded-xl shadow-lg flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Jumlah Store Aktif</p>
+                        <p class="text-3xl font-bold text-gray-800 mt-1">3 Store</p>
+                        <p class="text-xs text-gray-500 mt-1">Bali Area</p>
+                    </div>
+                    <i data-lucide="store" class="w-10 h-10 text-yellow-400 opacity-70"></i>
+                </div>
+
+                <!-- Card Total Member -->
+                <div class="bg-white p-6 rounded-xl shadow-lg flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Total Member Terdaftar</p>
+                        <p class="text-3xl font-bold text-gray-800 mt-1">1,240 Member</p>
+                        <p class="text-xs text-blue-500 mt-1">⭐ 50 Member baru</p>
+                    </div>
+                    <i data-lucide="users-2" class="w-10 h-10 text-blue-400 opacity-70"></i>
+                </div>
+            </div>
+
+            <!-- Sales Chart -->
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+                <h4 class="text-lg font-semibold mb-4 text-gray-700">Penjualan Bulanan (Line Chart)</h4>
+                <div id="chart-container">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- MEMBER SECTION -->
+        <section id="content-member" class="content-section hidden">
+            <h3 class="text-xl md:text-2xl font-bold mb-6" style="color:var(--kencana-blue)">🧑‍🤝‍🧑 Data Member Pelanggan</h3>
+            
+            <div class="flex justify-end mb-4">
+                <button onclick="showModal('addMemberModal')" class="btn-kencana text-white py-2 px-4 rounded-lg font-medium shadow-md hover:shadow-lg transition flex items-center">
+                    <i data-lucide="plus" class="w-5 h-5 mr-1"></i> Tambah Member Baru
+                </button>
+            </div>
+
+            <!-- Simple Member List (Demo) -->
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h4 class="text-lg font-semibold mb-4 text-gray-700">Daftar Member Aktif</h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bergabung</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Poin</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr><td class="px-6 py-4 whitespace-nowrap">M001</td><td class="px-6 py-4 whitespace-nowrap font-medium">I Gede Agung</td><td class="px-6 py-4 whitespace-nowrap">2023-01-10</td><td class="px-6 py-4 whitespace-nowrap text-amber-600 font-bold">450</td></tr>
+                            <tr><td class="px-6 py-4 whitespace-nowrap">M002</td><td class="px-6 py-4 whitespace-nowrap font-medium">Ni Putu Sari</td><td class="px-6 py-4 whitespace-nowrap">2023-03-22</td><td class="px-6 py-4 whitespace-nowrap text-amber-600 font-bold">210</td></tr>
+                            <tr><td class="px-6 py-4 whitespace-nowrap">M003</td><td class="px-6 py-4 whitespace-nowrap font-medium">Bapak Jono</td><td class="px-6 py-4 whitespace-nowrap">2024-05-15</td><td class="px-6 py-4 whitespace-nowrap text-amber-600 font-bold">80</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 text-sm text-gray-500">
+                    <button onclick="showMap(1)" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Lihat Member di peta...</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- STORE/MAP SECTION -->
+        <section id="content-store" class="content-section hidden">
+            <h3 class="text-xl md:text-2xl font-bold mb-6" style="color:var(--kencana-blue)">📍 Peta Store & Area Layanan</h3>
+            <div class="bg-white p-3 rounded-xl shadow-lg">
+                <div id="mapid"></div>
+            </div>
+        </section>
+
+        <!-- PENGATURAN / SETTINGS SECTION -->
+        <section id="content-settings" class="content-section hidden">
+            <h3 class="text-xl md:text-2xl font-bold mb-6" style="color:var(--kencana-blue)">⚙️ Pengaturan Sistem & Admin</h3>
+            
+            <!-- Add User Button -->
+            <div class="flex justify-end mb-6">
+                <button onclick="showModal('addUserModal')" class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg font-medium shadow-md hover:shadow-lg transition flex items-center">
+                    <i data-lucide="user-plus" class="w-5 h-5 mr-1"></i> Tambah User Admin
+                </button>
+            </div>
+
+            <!-- Card Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- Card 1: Pengaturan Superadmin -->
+                <div class="bg-white p-5 rounded-xl shadow-lg border-l-4 border-red-500">
+                    <h4 class="text-lg font-bold mb-4 text-red-700">Pengaturan Superadmin</h4>
+                    <p class="text-sm text-gray-500 mb-4">Pengaturan kritis sistem, hanya diakses oleh level admin tertinggi.</p>
+                    <form class="space-y-3">
+                        <div>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="maintenance_mode" class="rounded text-red-500 focus:ring-red-500">
+                                <span class="text-sm font-medium text-gray-700">Aktifkan Mode Perawatan (Maintenance Mode)</span>
+                            </label>
+                            <p class="text-xs text-red-400 mt-1">Sistem akan offline untuk publik. Gunakan dengan hati-hati.</p>
+                        </div>
+                        <div>
+                            <label for="max_admin_limit" class="block text-sm font-medium text-gray-700">Batas Maksimum Akun Admin</label>
+                            <input id="max_admin_limit" type="number" value="10" min="1" class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm">
+                        </div>
+                        <button type="submit" class="btn-kencana text-white py-2 px-4 rounded-lg font-medium text-sm w-full">Simpan Perubahan Kritis</button>
+                    </form>
+                </div>
+
+                <!-- Card 2: Pengaturan Pemasaran (Marketing) -->
+                <div class="bg-white p-5 rounded-xl shadow-lg border-l-4 border-purple-500">
+                    <h4 class="text-lg font-bold mb-4 text-purple-700">Pengaturan Marketing & Promo</h4>
+                    <p class="text-sm text-gray-500 mb-4">Konfigurasi diskon, notifikasi promo, dan segmentasi.</p>
+                    <form class="space-y-3">
+                        <div>
+                            <label for="default_discount_percent" class="block text-sm font-medium text-gray-700">Default Diskon (%)</label>
+                            <input id="default_discount_percent" type="number" value="5" min="0" max="100" class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="push_notification_status" class="block text-sm font-medium text-gray-700">Status Notifikasi Promo</label>
+                            <select id="push_notification_status" class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm">
+                                <option>Aktif Penuh</option>
+                                <option>Aktif Terbatas (Hanya Weekend)</option>
+                                <option>Nonaktif</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg font-medium text-sm w-full transition">Update Marketing Config</button>
+                    </form>
+                </div>
+
+                <!-- Card 3: Pengaturan Customer Service (CS) -->
+                <div class="bg-white p-5 rounded-xl shadow-lg border-l-4 border-blue-500">
+                    <h4 class="text-lg font-bold mb-4 text-blue-700">Pengaturan Layanan Pelanggan (CS)</h4>
+                    <p class="text-sm text-gray-500 mb-4">Pengaturan widget chat dan aturan penugasan tiket.</p>
+                    <form class="space-y-3">
+                        <div>
+                            <label for="default_cs_agent" class="block text-sm font-medium text-gray-700">Agen CS Default</label>
+                            <select id="default_cs_agent" class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm">
+                                <option>Beni (General)</option>
+                                <option>Sinta (Teknis)</option>
+                                <option>Otomatis (Round Robin)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="chat_widget_status" class="block text-sm font-medium text-gray-700">Tampilkan Widget Chat Online?</label>
+                            <select id="chat_widget_status" class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm">
+                                <option>Ya, di semua halaman</option>
+                                <option>Tidak, sembunyikan</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg font-medium text-sm w-full transition">Update CS Config</button>
+                    </form>
+                </div>
+                
+                <!-- Card 4: Log Aktivitas Admin -->
+                <div class="bg-white p-5 rounded-xl shadow-lg border-l-4 border-yellow-500">
+                    <h4 class="text-lg font-bold mb-4 text-yellow-700">Log Aktivitas Admin</h4>
+                    <p class="text-sm text-gray-500 mb-4">Lihat riwayat tindakan yang dilakukan oleh semua pengguna admin.</p>
+                    
+                    <div class="table-responsive">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Admin</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr><td class="px-4 py-2 text-xs text-gray-500">2025-10-15 14:30</td><td class="px-4 py-2 font-medium">Bambang</td><td class="px-4 py-2 text-green-600">Menambah Produk: Cat Dulux</td></tr>
+                                <tr><td class="px-4 py-2 text-xs text-gray-500">2025-10-15 11:15</td><td class="px-4 py-2 font-medium">Siska (Super)</td><td class="px-4 py-2 text-red-600">Menghapus Member: M005</td></tr>
+                                <tr><td class="px-4 py-2 text-xs text-gray-500">2025-10-14 09:00</td><td class="px-4 py-2 font-medium">Bambang</td><td class="px-4 py-2 text-blue-600">Mengedit Store: Jimbaran (Radius 7km)</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button class="bg-gray-100 text-gray-700 py-1 px-3 rounded-lg font-medium text-xs mt-4 w-full border border-gray-300 hover:bg-gray-200 transition">Lihat Semua Log</button>
+                </div>
+            </div>
+
+            <!-- NEW: Daftar User Admin (Full Width Section) -->
+            <div class="bg-white p-5 rounded-xl shadow-lg border-t-4 border-indigo-500 mt-8">
+                <h4 class="text-lg font-bold mb-4 text-indigo-700">Daftar User Admin Aktif</h4>
+                <p class="text-sm text-gray-500 mb-4">Kelola semua akun pengguna yang memiliki akses ke dashboard ini.</p>
+                
+                <div class="overflow-x-auto">
+                    <table id="adminUserTable" class="min-w-full divide-y divide-gray-200 text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nama User</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminUserTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Data users akan di-inject di sini oleh JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 text-sm text-gray-500">
+                    <button class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Export ke Excel</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal: Tambah Member (Existing form, updated to use non-alert messages) -->
+    <div id="addMemberModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4" onclick="closeModal('addMemberModal')">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md" onclick="event.stopPropagation()">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">Form Tambah Member Baru</h3>
+            <form id="addMemberForm" class="space-y-4">
+                <div>
+                    <label for="member_name" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                    <input type="text" id="member_name" required class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="member_phone" class="block text-sm font-medium text-gray-700">Nomor HP</label>
+                    <input type="tel" id="member_phone" required class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeModal('addMemberModal')" class="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium text-sm hover:bg-gray-300">Batal</button>
+                    <button type="submit" class="btn-kencana text-white py-2 px-4 rounded-lg font-medium text-sm">Simpan Member</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Tambah User Admin -->
+    <div id="addUserModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4" onclick="closeModal('addUserModal')">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md" onclick="event.stopPropagation()">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">Form Tambah User Admin</h3>
+            <form id="addUserForm" class="space-y-4">
+                <div>
+                    <label for="user_full_name" class="block text-sm font-medium text-gray-700">Nama Lengkap User</label>
+                    <input type="text" id="user_full_name" required class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm focus:border-red-500 focus:ring-red-500">
+                </div>
+                <div>
+                    <label for="user_email" class="block text-sm font-medium text-gray-700">Email User</label>
+                    <input type="email" id="user_email" required class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm focus:border-red-500 focus:ring-red-500">
+                </div>
+                <div>
+                    <label for="user_password" class="block text-sm font-medium text-gray-700">Password (Simulasi)</label>
+                    <input type="password" id="user_password" value="initial123" required class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm focus:border-red-500 focus:ring-red-500">
+                </div>
+                <div>
+                    <label for="user_role" class="block text-sm font-medium text-gray-700">Role User</label>
+                    <select id="user_role" required class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm focus:border-red-500 focus:ring-red-500">
+                        <option value="Super Admin">Super Admin</option>
+                        <option value="Admin">Admin (Full Control)</option>
+                        <option value="CS">Customer Service (CS)</option>
+                        <option value="Marketing">Marketing (Promo/Diskon)</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeModal('addUserModal')" class="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium text-sm hover:bg-gray-300">Batal</button>
+                    <button type="submit" class="bg-red-500 text-white py-2 px-4 rounded-lg font-medium text-sm hover:bg-red-600">Daftarkan User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Generic Message Modal (Replaces all alert() calls) -->
+    <div id="messageModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4" onclick="closeModal('messageModal')">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center" onclick="event.stopPropagation()">
+            <h3 id="messageModalTitle" class="text-xl font-bold mb-3 text-gray-800">Notifikasi</h3>
+            <p id="messageModalBody" class="text-gray-600 mb-6"></p>
+            <button type="button" onclick="closeModal('messageModal')" class="btn-kencana text-white py-2 px-6 rounded-lg font-medium text-sm">OK</button>
+        </div>
+    </div>
+
+    <script>
+        /* Global State for User Data (Simulasi data di frontend) */
+        let adminUsers = [
+            { id: 1, name: 'Siska', email: 'siska.super@kj.com', role: 'Super Admin', status: 'Aktif' },
+            { id: 2, name: 'Bambang', email: 'bambang@kj.com', role: 'Admin', status: 'Aktif' },
+            { id: 3, name: 'Sinta', email: 'sinta.cs@kj.com', role: 'CS', status: 'Aktif' },
+            { id: 4, name: 'Rudy', email: 'rudy.mkt@kj.com', role: 'Marketing', status: 'Nonaktif' },
+        ];
+
+        /* Lucide Icons Initialization */
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            renderAdminUsers(); // Panggil saat DOM siap
+        });
+
+
+        /* ---------- Dummy data for stores (building material store demo) ---------- */
+        const storeData = [
+            { id: 1, lat: -8.6500, lon: 115.2167, radius: 5000, name: 'Store Utama Denpasar', address: 'Jl. Gatot Subroto No.10, Denpasar', omzet: 125000000 },
+            { id: 2, lat: -8.7890, lon: 115.1600, radius: 7000, name: 'Store Jimbaran', address: 'Jl. Uluwatu No.25, Jimbaran', omzet: 76000000 },
+            { id: 3, lat: -8.5600, lon: 115.1800, radius: 6000, name: 'Store Mengwi', address: 'Jl. Raya Mengwi No.3', omzet: 42000000 }
+        ];
+
+        /* ---------- Chart Initialization ---------- */
+        function initializeChart() {
+            const canvas = document.getElementById('salesChart');
+            if (!canvas) return;
+
+            // destroy previous instance if exists
+            if (window.mySalesChart) window.mySalesChart.destroy();
+
+            const salesData = {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                datasets: [{
+                    label: 'Penjualan Bulanan (Juta IDR)',
+                    data: [120, 150, 135, 180, 210, 205, 195, 230, 245, 260, 275, 290],
+                    borderColor: 'rgb(232,65,88)',
+                    backgroundColor: 'rgba(232,65,88,0.12)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 3
+                }]
+            };
+
+            const ctx = canvas.getContext('2d');
+            window.mySalesChart = new Chart(ctx, {
+                type: 'line',
+                data: salesData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { callback: v => v + ' jt' } } }
+                }
+            });
+        }
+
+        /* ---------- Leaflet Map Initialization ---------- */
+        let mymap = null;
+        function initializeMap() {
+            const container = document.getElementById('mapid');
+            if (!container) return;
+
+            // remove existing map to avoid duplications
+            if (mymap) {
+                try { mymap.remove(); } catch (e) { /* ignore */ }
+                mymap = null;
+            }
+
+            // default center: first store
+            const center = [storeData[0].lat, storeData[0].lon];
+            mymap = L.map('mapid').setView(center, 11);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(mymap);
+
+            storeData.forEach(store => {
+                const marker = L.marker([store.lat, store.lon]).addTo(mymap);
+                const popupHtml = `<b>${store.name}</b><br>${store.address || ''}<br>Omzet: Rp ${store.omzet.toLocaleString()}`;
+                marker.bindPopup(popupHtml);
+
+                L.circle([store.lat, store.lon], {
+                    color: '#E84158',
+                    fillColor: '#E84158',
+                    fillOpacity: 0.12,
+                    radius: store.radius
+                }).addTo(mymap);
+            });
+
+            // if the container was hidden when map was created, ensure proper sizing
+            setTimeout(() => { try { mymap.invalidateSize(); } catch (e) {} }, 200);
+        }
+
+        function showMap(storeId) {
+            const store = storeData.find(s => s.id === storeId);
+            if (!store) return;
+
+            // show store section and mark link active
+            showContent('store');
+            setActiveLink(document.querySelector('.nav-link[data-target="store"]'));
+
+            // ensure map exists then set view to store
+            setTimeout(() => {
+                if (!mymap) initializeMap();
+                try { mymap.setView([store.lat, store.lon], 13); } catch (e) {}
+            }, 200);
+
+            // close sidebar on mobile
+            if (window.innerWidth < 768) toggleSidebar(false);
+        }
+
+        /* ---------- Content switching & sidebar helpers ---------- */
+        function showContent(targetId) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.add('hidden'));
+            const el = document.getElementById('content-' + targetId);
+            if (el) el.classList.remove('hidden');
+
+            // Initialize components based on the visible tab
+            if (targetId === 'dashboard') initializeChart();
+            if (targetId === 'store') setTimeout(initializeMap, 120);
+            if (targetId === 'settings') renderAdminUsers(); // Pastikan data user ditampilkan saat masuk tab Settings
+        }
+
+        function setActiveLink(clickedLink) {
+            document.querySelectorAll('.nav-link[data-target]').forEach(link => link.classList.remove('active'));
+            if (clickedLink) clickedLink.classList.add('active');
+        }
+
+        function toggleSidebar(shouldOpen) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (!sidebar || !overlay) return;
+
+            const isOpen = (typeof shouldOpen === 'boolean') ? shouldOpen : !sidebar.classList.contains('open');
+            if (isOpen) {
+                sidebar.classList.add('open');
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+                overlay.classList.add('opacity-50');
+                // accessibility
+                document.getElementById('sidebar-toggle')?.setAttribute('aria-expanded', 'true');
+            } else {
+                sidebar.classList.remove('open');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                overlay.classList.remove('opacity-50');
+                document.getElementById('sidebar-toggle')?.setAttribute('aria-expanded', 'false');
+            }
+        }
+
+        /* ---------- Modal helpers (Added showMessage) ---------- */
+        function showModal(id) { document.getElementById(id)?.classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id)?.classList.add('hidden'); }
+
+        // Function to display a notification message (replaces alert)
+        function showMessage(msg, title = 'Notifikasi') {
+            document.getElementById('messageModalTitle').textContent = title;
+            document.getElementById('messageModalBody').textContent = msg;
+            showModal('messageModal');
+        }
+
+        /* ---------- User Management Functions (NEW) ---------- */
+
+        function getRoleColor(role) {
+            switch (role) {
+                case 'Super Admin': return 'bg-red-100 text-red-800';
+                case 'Admin': return 'bg-blue-100 text-blue-800';
+                case 'CS': return 'bg-green-100 text-green-800';
+                case 'Marketing': return 'bg-purple-100 text-purple-800';
+                default: return 'bg-gray-100 text-gray-700';
+            }
+        }
+
+        function getStatusColor(status) {
+            return status === 'Aktif' ? 'text-green-600 font-medium' : 'text-gray-500 italic';
+        }
+
+        function handleDeleteUser(userId) {
+            // Ini hanya simulasi
+            if (confirm(`Apakah Anda yakin ingin menghapus user ID ${userId}?`)) {
+                 adminUsers = adminUsers.filter(user => user.id !== userId);
+                renderAdminUsers();
+                showMessage(`User ID ${userId} berhasil dihapus (Simulasi).`, 'Pengguna Dihapus');
+            }
+        }
+        
+        function renderAdminUsers() {
+            const tableBody = document.getElementById('adminUserTableBody');
+            if (!tableBody) return;
+
+            tableBody.innerHTML = ''; // Bersihkan data lama
+
+            adminUsers.forEach(user => {
+                const roleClass = getRoleColor(user.role);
+                const statusClass = getStatusColor(user.status);
+
+                const row = tableBody.insertRow();
+                row.className = 'hover:bg-gray-50 transition';
+
+                row.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap font-medium">${user.name}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-gray-500">${user.email}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${roleClass}">
+                            ${user.role}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="${statusClass}">
+                            ${user.status}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                        <button onclick="showMessage('Fungsi Edit untuk ${user.name} (Simulasi)', 'Edit User')" class="text-indigo-600 hover:text-indigo-900 mx-2">Edit</button>
+                        <button onclick="handleDeleteUser(${user.id})" class="text-red-600 hover:text-red-900 mx-2">Hapus</button>
+                    </td>
+                `;
+            });
+            // Update lucide icons for action buttons dynamically
+            lucide.createIcons(); 
+        }
+
+        /* ---------- DOM ready: wire events once ---------- */
+        document.addEventListener('DOMContentLoaded', () => {
+            // sidebar toggle
+            document.getElementById('sidebar-toggle')?.addEventListener('click', () => toggleSidebar());
+            document.getElementById('sidebar-overlay')?.addEventListener('click', () => toggleSidebar(false));
+
+            // nav links
+            document.querySelectorAll('.nav-link[data-target]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const target = link.getAttribute('data-target');
+                    setActiveLink(link);
+                    showContent(target);
+                    if (window.innerWidth < 768) toggleSidebar(false);
+                });
+            });
+
+            // default show dashboard (will initialize chart)
+            const defaultLink = document.querySelector('.nav-link[data-target="dashboard"]');
+            setActiveLink(defaultLink);
+            showContent('dashboard');
+
+            /* * Form Handlers */
+
+            // Existing: Add Member Form (Demo behavior)
+            const addForm = document.getElementById('addMemberForm');
+            if (addForm) {
+                addForm.addEventListener('submit', function (ev) {
+                    ev.preventDefault();
+                    const name = document.getElementById('member_name')?.value || '(nama kosong)';
+                    showMessage('Member "' + name + '" berhasil didaftarkan.', 'Pendaftaran Berhasil');
+                    closeModal('addMemberModal');
+                    addForm.reset();
+                });
+            }
+
+            // Add User Admin Form (Demo behavior)
+            const addUserForm = document.getElementById('addUserForm');
+            if (addUserForm) {
+                addUserForm.addEventListener('submit', function (ev) {
+                    ev.preventDefault();
+                    const name = document.getElementById('user_full_name').value;
+                    const email = document.getElementById('user_email').value;
+                    const role = document.getElementById('user_role').value;
+                    
+                    // Simulasi penambahan user baru
+                    const newUser = {
+                        id: adminUsers.length > 0 ? Math.max(...adminUsers.map(u => u.id)) + 1 : 1,
+                        name: name,
+                        email: email,
+                        role: role,
+                        status: 'Aktif'
+                    };
+                    adminUsers.push(newUser);
+
+                    renderAdminUsers(); // Refresh tabel user
+                    showMessage(`User Admin baru: "${name}" (${role}) berhasil dibuat.`, 'User Ditambahkan');
+                    closeModal('addUserModal');
+                    addUserForm.reset();
+                });
+            }
+
+
+            // responsive: resize chart/map on window resize end
+            let resizeTimeout = null;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    if (window.mySalesChart) window.mySalesChart.resize();
+                    if (mymap) try { mymap.invalidateSize(); } catch (e) {}
+                }, 200);
+            });
+        });
+    </script>
+</body>
+</html>
