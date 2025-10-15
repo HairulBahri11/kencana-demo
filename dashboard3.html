@@ -149,8 +149,21 @@
                 Manajemen Produk</a>
             <a href="#store" class="nav-link px-4 py-3 rounded-md" data-target="store"><span class="mr-3">🏢</span>
                 Manajemen Store</a>
-            <a href="#settings" class="nav-link px-4 py-3 rounded-md" data-target="settings"><span
-                    class="mr-3">⚙️</span> Pengaturan</a>
+            <!-- Separator for Settings Group -->
+            <div class="pt-4 mt-4 border-gray-200">
+                <p class="text-xs font-semibold text-gray-500 uppercase px-4 mb-2">Settings</p>
+                <!-- Settings Link -->
+                <a href="#" class="nav-link flex items-center py-3 transition duration-150" data-target="settings">
+                    <i data-lucide="wrench" class="w-5 h-5 mr-3"></i>
+                    <!-- font size 12 -->
+                    <span class="text-sm">System Settings</span>
+                </a>
+                <!-- NEW: Role & Permissions Link -->
+                <a href="#" class="nav-link flex items-center py-3 transition duration-150" data-target="roles">
+                    <i data-lucide="shield-check" class="w-5 h-5 mr-3"></i>
+                    <span class="text-sm">Role & Permissions</span>
+                </a>
+            </div>
             <a href="#" class="nav-link px-4 py-3 rounded-md text-red-300 hover:!bg-red-800"><span
                     class="mr-3">🚪</span> Logout</a>
         </nav>
@@ -688,6 +701,65 @@
                 </div>
             </section>
 
+             <!-- NEW: ROLE & PERMISSIONS SECTION -->
+        <section id="content-roles" class="content-section hidden">
+            <h3 class="text-xl md:text-2xl font-bold mb-6 text-green-700">🛡️ Role & Access Permissions</h3>
+            
+            <div class="flex justify-end mb-6">
+                <button onclick="showModal('addRoleModal')" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium shadow-md hover:shadow-lg transition flex items-center">
+                    <i data-lucide="shield-plus" class="w-5 h-5 mr-1"></i> Tambah Role Baru
+                </button>
+            </div>
+
+            <!-- Role List Table -->
+            <div class="bg-white p-5 rounded-xl shadow-lg border-t-4 border-green-500 mb-8">
+                <h4 class="text-lg font-bold mb-4 text-green-700">Daftar Role Aktif</h4>
+                <p class="text-sm text-gray-500 mb-4">Setiap Role memiliki set hak akses yang berbeda.</p>
+                
+                <div class="overflow-x-auto">
+                    <table id="roleTable" class="min-w-full divide-y divide-gray-200 text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nama Role</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total Users</th>
+                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="roleTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Data roles akan di-inject di sini -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Permission Matrix Simulation -->
+            <div class="bg-white p-5 rounded-xl shadow-lg border-t-4 border-indigo-500">
+                <h4 class="text-lg font-bold mb-4 text-indigo-700">Atur Permissions (Simulasi)</h4>
+                <p class="text-sm text-gray-500 mb-4">Pilih Role untuk mengatur hak akses mereka terhadap modul sistem.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-1">
+                        <label for="select_role" class="block text-sm font-medium text-gray-700">Pilih Role yang Ingin Diatur</label>
+                        <select id="select_role" class="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm focus:border-indigo-500 focus:ring-indigo-500" onchange="displayPermissions(this.value)">
+                            <!-- Options filled by JS -->
+                        </select>
+                    </div>
+                    
+                    <div class="md:col-span-2 bg-gray-50 p-4 rounded-lg border">
+                        <h5 class="text-md font-semibold mb-3 text-gray-800" id="selectedRoleTitle">Permissions untuk Role: -</h5>
+                        <form id="permissionForm" class="space-y-3">
+                            <!-- Checkboxes will be injected here -->
+                            <div id="permissionCheckboxes" class="space-y-2">
+                                <p class="text-sm text-gray-500 italic">Pilih Role di atas untuk menampilkan hak akses.</p>
+                            </div>
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg font-medium text-sm mt-4 w-full transition" id="savePermissionsBtn" disabled>Simpan Permissions</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         </div>
     </main>
 
@@ -791,10 +863,32 @@
             // { id: 5, lat: -8.3400, lon: 115.0900, radius: 5000, name: 'Store Gianyar', address: 'Jl. Dewi Sita No.12, Gianyar', omzet: 54000000 }
         ];
 
+      
+        // Roles and their simulated permissions
+        let roles = [
+            { name: 'Super Admin', description: 'Akses penuh ke semua modul dan konfigurasi kritis.', permissions: ['view_dashboard', 'manage_member', 'manage_store', 'manage_settings', 'manage_roles'] },
+            { name: 'Admin', description: 'Akses penuh, kecuali konfigurasi kritis sistem.', permissions: ['view_dashboard', 'manage_member', 'manage_store', 'manage_settings'] },
+            { name: 'CS', description: 'Hanya melihat member dan store, fokus ke layanan pelanggan.', permissions: ['view_dashboard', 'manage_member', 'view_store'] },
+            { name: 'Marketing', description: 'Mengelola diskon, promo, dan melihat data member/dashboard.', permissions: ['view_dashboard', 'manage_member', 'manage_marketing_config'] },
+        ];
+        
+        // All possible permissions in the system
+        const allPermissions = {
+            'view_dashboard': 'Melihat Halaman Dashboard & Statistik',
+            'manage_member': 'Mengelola Data Member (Tambah/Edit/Hapus)',
+            'manage_store': 'Mengelola Lokasi Store & Area Layanan',
+            'manage_settings': 'Mengelola Pengaturan Umum Sistem',
+            'manage_marketing_config': 'Mengelola Konfigurasi Marketing & Promo',
+            'manage_roles': 'Mengelola Role & Hak Akses Pengguna',
+        };
+
         /* Lucide Icons Initialization */
         window.addEventListener('DOMContentLoaded', () => {
             // lucide.createIcons();
-            renderAdminUsers(); // Panggil saat DOM siap
+            // Initial rendering for the tabs that need it
+            renderAdminUsers(); 
+            renderRoleTables();
+            updateRoleSelects();
         });
 
         /* Global State for User Data (Simulasi data di frontend) */
@@ -992,6 +1086,106 @@
             });
             // Update lucide icons for action buttons dynamically
             // lucide.createIcons(); 
+        }
+
+        // Function to populate the role dropdowns in Modals and Role Section
+        function updateRoleSelects() {
+            const userRoleSelect = document.getElementById('user_role');
+            const rolePermissionSelect = document.getElementById('select_role');
+
+            if (userRoleSelect) userRoleSelect.innerHTML = '';
+            if (rolePermissionSelect) rolePermissionSelect.innerHTML = '<option value="">-- Pilih Role --</option>';
+
+            roles.forEach(role => {
+                const option = `<option value="${role.name}">${role.name}</option>`;
+                if (userRoleSelect) userRoleSelect.insertAdjacentHTML('beforeend', option);
+                if (rolePermissionSelect) rolePermissionSelect.insertAdjacentHTML('beforeend', option);
+            });
+        }
+        
+        /* ---------- Role Management Functions (NEW) ---------- */
+        
+        function getRoleUserCount(roleName) {
+            return adminUsers.filter(user => user.role === roleName).length;
+        }
+
+        function renderRoleTables() {
+            const tableBody = document.getElementById('roleTableBody');
+            if (!tableBody) return;
+
+            tableBody.innerHTML = '';
+
+            roles.forEach(role => {
+                const userCount = getRoleUserCount(role.name);
+                const roleColor = getRoleColor(role.name);
+
+                const row = tableBody.insertRow();
+                row.className = 'hover:bg-gray-50 transition';
+
+                row.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-sm leading-5 font-semibold rounded-full ${roleColor}">
+                            ${role.name}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-gray-700">${role.description}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-center text-gray-600 font-bold">${userCount}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-medium">
+                        <button onclick="displayPermissions('${role.name}')" class="text-green-600 hover:text-green-900 mx-2">Atur Access</button>
+                        <button onclick="handleDeleteRole('${role.name}')" class="text-red-600 hover:text-red-900 mx-2" ${userCount > 0 ? 'disabled' : ''}>Hapus</button>
+                    </td>
+                `;
+            });
+        }
+        
+        function handleDeleteRole(roleName) {
+            if (getRoleUserCount(roleName) > 0) {
+                showMessage(`Role "${roleName}" tidak bisa dihapus karena masih digunakan oleh ${getRoleUserCount(roleName)} user.`, 'Gagal Menghapus Role');
+                return;
+            }
+            if (confirm(`Apakah Anda yakin ingin menghapus Role "${roleName}"?`)) {
+                 roles = roles.filter(r => r.name !== roleName);
+                renderRoleTables();
+                updateRoleSelects();
+                showMessage(`Role "${roleName}" berhasil dihapus (Simulasi).`, 'Role Dihapus');
+            }
+        }
+        
+        function displayPermissions(roleName) {
+            const role = roles.find(r => r.name === roleName);
+            const checkboxesContainer = document.getElementById('permissionCheckboxes');
+            const title = document.getElementById('selectedRoleTitle');
+            const saveBtn = document.getElementById('savePermissionsBtn');
+            const selectRole = document.getElementById('select_role');
+
+            if (!role || !checkboxesContainer || !title || !saveBtn || !selectRole) return;
+            
+            // Set the select box to the currently selected role
+            selectRole.value = roleName;
+
+            title.textContent = `Permissions untuk Role: ${roleName}`;
+            checkboxesContainer.innerHTML = '';
+            saveBtn.disabled = false;
+            
+            if (roleName === 'Super Admin') {
+                checkboxesContainer.innerHTML = '<p class="text-sm text-red-500 font-bold">Role Super Admin memiliki akses penuh, tidak dapat diubah.</p>';
+                saveBtn.disabled = true;
+                return;
+            }
+
+            // Create checkboxes for all permissions
+            Object.keys(allPermissions).forEach(permKey => {
+                const permName = allPermissions[permKey];
+                const isChecked = role.permissions.includes(permKey);
+                
+                const html = `
+                    <div class="flex items-center">
+                        <input type="checkbox" id="perm_${permKey}" name="permission" value="${permKey}" class="rounded text-indigo-600 focus:ring-indigo-500" ${isChecked ? 'checked' : ''}>
+                        <label for="perm_${permKey}" class="ml-2 text-sm text-gray-700">${permName}</label>
+                    </div>
+                `;
+                checkboxesContainer.insertAdjacentHTML('beforeend', html);
+            });
         }
 
         /* ---------- DOM ready: wire events once ---------- */
